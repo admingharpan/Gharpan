@@ -1,0 +1,215 @@
+/* --- Google Font Import --- */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap");
+
+/* --- CSS Variables for Easy Theming --- */
+:root {
+  --brand-color: #0a400c; /* Brand green */
+  --navbar-height: 60px;  /* Shorter navbar */
+  --font-family: "Poppins", sans-serif;
+}
+
+/* --- Main Navbar Styling --- */
+.navbar {
+  height: var(--navbar-height);
+  background: var(--brand-color); /* Solid green background */
+  border-bottom: none; /* ✅ removed shadow */
+  padding: 0 15px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+/* --- Logo Styling --- */
+.logo {
+  height: 40px; /* adjusted to fit shorter navbar */
+  width: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    box-shadow 0.3s ease;
+  display: block;
+}
+
+.logo:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* --- Brand Container --- */
+.navbar-brand {
+  padding: 0;
+  transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.navbar-brand:hover {
+  transform: translateY(-2px);
+}
+
+/* --- Remove focus outline on logo/brand --- */
+.logo:focus,
+.navbar-brand:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* --- Brand Text Styling --- */
+.brand-text {
+  font-family: var(--font-family);
+  font-size: 1.1rem; /* slightly smaller */
+  font-weight: 600;
+  color: #ffffff !important; /* White text for green navbar */
+  letter-spacing: 0.2px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* --- Accessibility Focus Ring (for nav links only) --- */
+.nav-link:focus {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* --- Logout Button --- */
+.logout-btn {
+  background: #ffffff;
+  color: var(--brand-color);
+  border: none;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-family: var(--font-family);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  white-space: nowrap;
+  height: fit-content;
+  align-self: center;
+}
+
+.logout-btn:hover {
+  background: #e6e6e6;
+  transform: translateY(-2px);
+}
+
+.logout-btn:active {
+  transform: translateY(0px);
+  box-shadow: none;
+}
+
+/* --- Media Queries for Responsive Design --- */
+
+/* Tablets and small laptops */
+@media (max-width: 992px) {
+  .brand-text {
+    font-size: 1rem;
+  }
+  
+  .logo {
+    height: 36px;
+    width: 36px;
+  }
+  
+  .logout-btn {
+    padding: 5px 14px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Mobile devices */
+@media (max-width: 768px) {
+  :root {
+    --navbar-height: 56px;
+  }
+  
+  .navbar {
+    padding: 0 12px;
+  }
+  
+  .brand-text {
+    font-size: 0.95rem;
+  }
+  
+  .logo {
+    height: 34px;
+    width: 34px;
+  }
+  
+  .logout-btn {
+    padding: 5px 12px;
+    font-size: 0.85rem;
+  }
+  
+  .navbar-brand:hover {
+    transform: none;
+  }
+  
+  .logo:hover {
+    transform: scale(1.05);
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 576px) {
+  :root {
+    --navbar-height: 52px;
+  }
+  
+  .navbar {
+    padding: 0 10px;
+  }
+  
+  .brand-text {
+    font-size: 0.85rem;
+    letter-spacing: 0.1px;
+  }
+  
+  .logo {
+    height: 30px;
+    width: 30px;
+  }
+  
+  .logout-btn {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 400px) {
+  :root {
+    --navbar-height: 50px;
+  }
+  
+  .navbar {
+    padding: 0 8px;
+  }
+  
+  .brand-text {
+    font-size: 0.8rem;
+  }
+  
+  .logo {
+    height: 28px;
+    width: 28px;
+  }
+  
+  .logout-btn {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+  }
+}
+
+/* Ensure navbar content stays within bounds */
+.navbar-collapse {
+  align-items: center;
+}
+
+.navbar-nav {
+  align-items: center;
+}
