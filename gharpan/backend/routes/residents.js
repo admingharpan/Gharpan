@@ -1617,6 +1617,7 @@ router.get("/", async (req, res) => {
 });
 
 // POST /api/residents
+// NOTE: This route is likely deprecated by the first POST route, but kept for completeness
 router.post("/", upload.single("photo"), async (req, res) => {
   console.log("Create resident route hit:", {
     body: req.body,
@@ -1744,6 +1745,7 @@ router.post("/", upload.single("photo"), async (req, res) => {
 });
 
 // GET /api/residents/:id
+// NOTE: This route is likely deprecated by the first GET /:id route, but kept for completeness
 router.get("/:id", async (req, res) => {
   console.log("Get resident route hit:", { residentId: req.params.id });
   try {
@@ -1781,6 +1783,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // PUT /api/residents/:id
+// NOTE: This route is likely deprecated by the first PUT /:id route, but kept for completeness
 // routes/residents.js (PUT /api/residents/:id)
 router.put("/:id", upload.single("photoUpload"), async (req, res) => {
   console.log("PUT /api/residents/:id hit:", {
@@ -2172,13 +2175,12 @@ router.get("/:id/download", async (req, res) => {
       const doc = new PDFDocument({
         margin: 30,
         size: "A4",
-        bufferPages: true,
         info: {
           Title: `Resident ${template === "summary"
-              ? "Summary"
-              : template === "medical"
-                ? "Medical Record"
-                : "Details"
+            ? "Summary"
+            : template === "medical"
+              ? "Medical Record"
+              : "Details"
             } - ${resident.registrationNo || resident._id}`,
           Author: "Gharpan Organization",
           Subject: `Resident ${template.charAt(0).toUpperCase() + template.slice(1)
@@ -2795,7 +2797,7 @@ router.get("/:id/download", async (req, res) => {
 
           // Then try to embed document content
           for (const document of resident.documentIds) {
-            yPosition = checkPageBreak(yPosition, 200);
+            yPosition = checkPageBreak(yPos, 200);
 
             // Document header
             doc
@@ -2915,8 +2917,9 @@ router.get("/:id/download", async (req, res) => {
               )
               .fontSize(8)
               .font("Helvetica")
+              // FIX 2: Changed toLocaleDateString to toLocaleString and added timeZone
               .text(
-                `Page ${i + 1} of ${totalPages} | Generated: ${new Date().toLocaleDateString("en-IN")} at ${new Date().toLocaleTimeString("en-IN")}`,
+                `Page ${i + 1} of ${totalPages} | Generated: ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}`,
                 40,
                 footerY + 35,
                 { width: 520, align: 'center' }
