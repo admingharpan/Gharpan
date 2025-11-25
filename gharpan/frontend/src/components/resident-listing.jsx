@@ -30,17 +30,6 @@ const ResidentsListing = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState("");
-  const [previewResident, setPreviewResident] = useState(null);
-  const [showUpdateModal, setShowUpdateModal] = useState(false);
-  const [updateResident, setUpdateResident] = useState(null);
-  const [updateLoading, setUpdateLoading] = useState(false);
-
-  // FIXED: Better form state management using useState instead of useRef for better React practices
-  const [formData, setFormData] = useState({});
-  const [originalData, setOriginalData] = useState({});
-  const [changedFields, setChangedFields] = useState(new Set());
 
   // Sorting state
   const [sortOrder, setSortOrder] = useState("asc");
@@ -63,7 +52,7 @@ const ResidentsListing = () => {
   const isValidObjectId = (id) => {
     return /^[0-9a-fA-F]{24}$/.test(id);
   };
-  
+
   // Debounce utility function
   function debounce(func, wait) {
     let timeout;
@@ -192,7 +181,7 @@ const ResidentsListing = () => {
   const handleUpdateClick = (resident) => {
     console.log("Opening update modal for resident:", resident._id);
     setUpdateResident(resident);
-    
+
     // FIXED: Create form data while preserving all existing values
     const initialFormData = {
       // Basic Information
@@ -207,7 +196,7 @@ const ResidentsListing = () => {
       height: resident.height || "",
       religion: resident.religion || "",
       identificationMark: resident.identificationMark || "",
-      
+
       // Contact Information
       mobileNo: resident.mobileNo || "",
       phoneNumber: resident.phoneNumber || "",
@@ -241,7 +230,7 @@ const ResidentsListing = () => {
       medicalHistory: resident.medicalHistory || "",
       primaryDoctor: resident.primaryDoctor || "",
       preferredHospital: resident.preferredHospital || "",
-      
+
       // Address Information
       address: {
         fullAddress: resident.address?.fullAddress || "",
@@ -294,7 +283,7 @@ const ResidentsListing = () => {
       updatedBy: resident.updatedBy || "",
       updateSummary: resident.updateSummary || "",
     };
-    
+
     setOriginalData({ ...initialFormData });
     setFormData({ ...initialFormData });
     setChangedFields(new Set());
@@ -304,7 +293,7 @@ const ResidentsListing = () => {
   // FIXED: Handle form input changes - track only changed fields
   const handleFormInputChange = (fieldName, value) => {
     let cleanedValue = value;
-    
+
     // Input validation and cleaning
     if (
       fieldName === "age" ||
@@ -356,7 +345,7 @@ const ResidentsListing = () => {
       const originalValue = fieldName.startsWith('address.')
         ? originalData.address?.[fieldName.split('.')[1]]
         : originalData[fieldName];
-      
+
       if (String(cleanedValue) !== String(originalValue)) {
         newSet.add(fieldName);
       } else {
@@ -376,7 +365,7 @@ const ResidentsListing = () => {
     setUpdateLoading(true);
     try {
       const updatePayload = {};
-      
+
       changedFields.forEach(fieldName => {
         if (fieldName.startsWith('address.')) {
           if (!updatePayload.address) {
@@ -393,18 +382,18 @@ const ResidentsListing = () => {
         if (updatePayload[key] === "") {
           updatePayload[key] = null;
         }
-        
+
         // Handle numeric fields
         if (
           (key === "age" ||
-           key === "weight" ||
-           key === "height" ||
-           key === "itemAmount" ||
-           key === "bodyTemperature" ||
-           key === "heartRate" ||
-           key === "respiratoryRate" ||
-           key === "distanceFromFacility") &&
-          updatePayload[key] !== null && 
+            key === "weight" ||
+            key === "height" ||
+            key === "itemAmount" ||
+            key === "bodyTemperature" ||
+            key === "heartRate" ||
+            key === "respiratoryRate" ||
+            key === "distanceFromFacility") &&
+          updatePayload[key] !== null &&
           updatePayload[key] !== ""
         ) {
           updatePayload[key] = Number(updatePayload[key]);
@@ -418,7 +407,7 @@ const ResidentsListing = () => {
           }
         });
       }
-      
+
       console.log("Sending update payload (only changed fields):", updatePayload);
       console.log("Changed fields:", Array.from(changedFields));
 
@@ -443,11 +432,11 @@ const ResidentsListing = () => {
               : resident
           )
         );
-        
+
         closeUpdateModal(); // Use the dedicated close function
         setError("Resident updated successfully!");
         setTimeout(() => setError(""), 3000);
-        
+
         console.log("Update successful");
       } else {
         console.error("Update failed:", result);
@@ -575,9 +564,8 @@ const ResidentsListing = () => {
         const a = document.createElement("a");
         a.style.display = "none";
         a.href = url;
-        a.download = `residents_export_${
-          new Date().toISOString().split("T")[0]
-        }.xlsx`;
+        a.download = `residents_export_${new Date().toISOString().split("T")[0]
+          }.xlsx`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -793,7 +781,7 @@ const ResidentsListing = () => {
         return "";
       }
     };
-    
+
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div
@@ -1110,7 +1098,7 @@ const ResidentsListing = () => {
                     placeholder="Social media profile"
                   />
                 </div>
-                
+
                 <div className="col-md-6">
                   <label className="form-label" style={{ fontWeight: 600 }}>
                     Relative Who Admitted
@@ -2229,7 +2217,7 @@ const ResidentsListing = () => {
                         selectedResident._id,
                         selectedResident.registrationNo,
                         selectedResident.nameGivenByOrganization ||
-                          selectedResident.name
+                        selectedResident.name
                       )
                     }
                     className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
@@ -2245,7 +2233,7 @@ const ResidentsListing = () => {
                         selectedResident._id,
                         selectedResident.registrationNo,
                         selectedResident.nameGivenByOrganization ||
-                          selectedResident.name
+                        selectedResident.name
                       )
                     }
                     className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
@@ -2463,17 +2451,16 @@ const ResidentsListing = () => {
                 <div>
                   <strong>Health Status:</strong>
                   <span
-                    className={`ml-2 px-2 py-1 rounded text-sm ${
-                      selectedResident.healthStatus
+                    className={`ml-2 px-2 py-1 rounded text-sm ${selectedResident.healthStatus
+                      ?.toLowerCase()
+                      .includes("good")
+                      ? "bg-green-100 text-green-800"
+                      : selectedResident.healthStatus
                         ?.toLowerCase()
-                        .includes("good")
-                        ? "bg-green-100 text-green-800"
-                        : selectedResident.healthStatus
-                            ?.toLowerCase()
-                            .includes("critical")
+                        .includes("critical")
                         ? "bg-red-100 text-red-800"
                         : "bg-yellow-100 text-yellow-800"
-                    }`}
+                      }`}
                   >
                     {selectedResident.healthStatus || "N/A"}
                   </span>
@@ -2491,7 +2478,7 @@ const ResidentsListing = () => {
                   {selectedResident.rehabStatus || "N/A"}
                 </div>
               </div>
-              
+
               {/* Vital Signs */}
               {(selectedResident.bodyTemperature || selectedResident.heartRate || selectedResident.respiratoryRate || selectedResident.bloodPressure) && (
                 <div className="mt-4">
@@ -2517,43 +2504,43 @@ const ResidentsListing = () => {
               <div className="mt-4 grid grid-cols-1 gap-4">
                 {selectedResident.allergies && (
                   <div>
-                    <strong>Known Allergies:</strong> 
+                    <strong>Known Allergies:</strong>
                     <p className="mt-1 text-gray-700">{selectedResident.allergies}</p>
                   </div>
                 )}
                 {selectedResident.knownAllergies && (
                   <div>
-                    <strong>Additional Allergies:</strong> 
+                    <strong>Additional Allergies:</strong>
                     <p className="mt-1 text-gray-700">{selectedResident.knownAllergies}</p>
                   </div>
                 )}
                 {selectedResident.medicalConditions && (
                   <div>
-                    <strong>Medical Conditions:</strong> 
+                    <strong>Medical Conditions:</strong>
                     <p className="mt-1 text-gray-700">{selectedResident.medicalConditions}</p>
                   </div>
                 )}
                 {selectedResident.medications && (
                   <div>
-                    <strong>Current Medications:</strong> 
+                    <strong>Current Medications:</strong>
                     <p className="mt-1 text-gray-700">{selectedResident.medications}</p>
                   </div>
                 )}
                 {selectedResident.disabilityDetails && (
                   <div>
-                    <strong>Disability Details:</strong> 
+                    <strong>Disability Details:</strong>
                     <p className="mt-1 text-gray-700">{selectedResident.disabilityDetails}</p>
                   </div>
                 )}
                 {selectedResident.medicalHistoryNotes && (
                   <div>
-                    <strong>Medical History Notes:</strong> 
+                    <strong>Medical History Notes:</strong>
                     <p className="mt-1 text-gray-700">{selectedResident.medicalHistoryNotes}</p>
                   </div>
                 )}
                 {selectedResident.medicalHistory && (
                   <div>
-                    <strong>Medical History:</strong> 
+                    <strong>Medical History:</strong>
                     <p className="mt-1 text-gray-700">{selectedResident.medicalHistory}</p>
                   </div>
                 )}
@@ -2648,11 +2635,10 @@ const ResidentsListing = () => {
                 </div>
                 <div>
                   <strong>Admission Status:</strong>{" "}
-                  <span className={`px-2 py-1 rounded text-sm ${
-                    selectedResident.admissionStatus === "Active" ? "bg-green-100 text-green-800" :
+                  <span className={`px-2 py-1 rounded text-sm ${selectedResident.admissionStatus === "Active" ? "bg-green-100 text-green-800" :
                     selectedResident.admissionStatus === "Discharged" ? "bg-gray-100 text-gray-800" :
-                    "bg-yellow-100 text-yellow-800"
-                  }`}>
+                      "bg-yellow-100 text-yellow-800"
+                    }`}>
                     {selectedResident.admissionStatus || "N/A"}
                   </span>
                 </div>
@@ -2745,15 +2731,14 @@ const ResidentsListing = () => {
                 {selectedResident.priorityLevel && (
                   <div>
                     <strong>Priority Level:</strong>
-                    <span className={`ml-2 px-2 py-1 rounded text-sm ${
-                      selectedResident.priorityLevel === "Critical" || selectedResident.priorityLevel === "Emergency"
-                        ? "bg-red-100 text-red-800"
-                        : selectedResident.priorityLevel === "High"
+                    <span className={`ml-2 px-2 py-1 rounded text-sm ${selectedResident.priorityLevel === "Critical" || selectedResident.priorityLevel === "Emergency"
+                      ? "bg-red-100 text-red-800"
+                      : selectedResident.priorityLevel === "High"
                         ? "bg-orange-100 text-orange-800"
                         : selectedResident.priorityLevel === "Low"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}>
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}>
                       {selectedResident.priorityLevel}
                     </span>
                   </div>
@@ -2819,9 +2804,8 @@ const ResidentsListing = () => {
                           </span>
                         </div>
                         {event.status && (
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            event.status === "Completed" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
-                          }`}>
+                          <span className={`px-2 py-1 rounded text-xs ${event.status === "Completed" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                            }`}>
                             {event.status}
                           </span>
                         )}
@@ -2864,9 +2848,8 @@ const ResidentsListing = () => {
                 </div>
                 <div>
                   <strong>Active Status:</strong>
-                  <span className={`ml-2 px-2 py-1 rounded text-sm ${
-                    selectedResident.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                  }`}>
+                  <span className={`ml-2 px-2 py-1 rounded text-sm ${selectedResident.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                    }`}>
                     {selectedResident.isActive ? "Active" : "Inactive"}
                   </span>
                 </div>
@@ -3076,9 +3059,8 @@ const ResidentsListing = () => {
               Filters
               <ChevronDown
                 size={14}
-                className={`transform transition-transform ${
-                  showFilters ? "rotate-180" : ""
-                }`}
+                className={`transform transition-transform ${showFilters ? "rotate-180" : ""
+                  }`}
               />
             </button>
             <button
@@ -3448,23 +3430,22 @@ const ResidentsListing = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          resident.healthStatus?.toLowerCase().includes("good")
-                            ? "bg-green-100 text-green-800"
-                            : resident.healthStatus
-                                ?.toLowerCase()
-                                .includes("critical")
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${resident.healthStatus?.toLowerCase().includes("good")
+                          ? "bg-green-100 text-green-800"
+                          : resident.healthStatus
+                            ?.toLowerCase()
+                            .includes("critical")
                             ? "bg-red-100 text-red-800"
                             : resident.healthStatus
-                                ?.toLowerCase()
-                                .includes("fair")
-                            ? "bg-yellow-100 text-yellow-800"
-                            : resident.healthStatus
+                              ?.toLowerCase()
+                              .includes("fair")
+                              ? "bg-yellow-100 text-yellow-800"
+                              : resident.healthStatus
                                 ?.toLowerCase()
                                 .includes("stable")
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-gray-100 text-gray-800"
+                          }`}
                       >
                         {resident.healthStatus || "N/A"}
                       </span>
@@ -3485,14 +3466,16 @@ const ResidentsListing = () => {
                           <Edit size={16} className="mr-1" />
                           Update
                         </button>
-                        <button
-                          onClick={() => handleDeleteClick(resident)}
-                          className="text-red-600 hover:text-red-900 flex items-center"
-                          disabled={deleteLoading === resident._id}
-                        >
-                          <Trash2 size={16} className="mr-1" />
-                          Delete
-                        </button>
+                        {userRole === "superadmin" && (
+                          <button
+                            onClick={() => handleDeleteClick(resident)}
+                            className="text-red-600 hover:text-red-900 flex items-center"
+                            disabled={deleteLoading === resident._id}
+                          >
+                            <Trash2 size={16} className="mr-1" />
+                            Delete
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -3543,11 +3526,10 @@ const ResidentsListing = () => {
                       <button
                         key={i + 1}
                         onClick={() => handlePageChange(i + 1)}
-                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                          currentPage === i + 1
-                            ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                            : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                        }`}
+                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === i + 1
+                          ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                          : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                          }`}
                       >
                         {i + 1}
                       </button>

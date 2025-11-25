@@ -10,11 +10,11 @@ function Login({ onLoginSuccess }) {
   const [error, setError] = useState("");
 
   const validAdmins = {
-    Admin1: "Gharpan",
-    Admin2: "Gharpan",
-    Admin3: "Gharpan",
-    Admin4: "Gharpan",
-    Admin5: "Gharpan",
+    SuperAdmin: { password: "Gharpan", role: "superadmin" },
+    Admin1: { password: "Gharpan", role: "admin" },
+    Admin2: { password: "Gharpan", role: "admin" },
+    Admin3: { password: "Gharpan", role: "admin" },
+    Admin4: { password: "Gharpan", role: "admin" },
   };
 
   const handleInputChange = (e) => {
@@ -39,20 +39,23 @@ function Login({ onLoginSuccess }) {
       return;
     }
 
-    if (!validAdmins[formData.adminId]) {
+    const admin = validAdmins[formData.adminId];
+
+    if (!admin) {
       setError("Invalid Admin ID. Access denied.");
       return;
     }
 
-    if (validAdmins[formData.adminId] !== formData.password) {
+    if (admin.password !== formData.password) {
       setError("Invalid password. Please try again.");
       return;
     }
 
     console.log("Form submitted:", formData);
 
-    // Save login token only once
+    // Save login token and role
     localStorage.setItem("token", "true");
+    localStorage.setItem("userRole", admin.role);
 
     setTimeout(() => {
       alert("Login successful!");
@@ -282,7 +285,7 @@ function Login({ onLoginSuccess }) {
                 Secure admin access to GHARPAN Foundation system
               </p>
               <div className="mt-4 text-xs text-gray-400">
-                <p>Authorized Admin IDs: Admin1 through Admin5</p>
+                <p>Authorized Admin IDs: SuperAdmin, Admin1 through Admin4</p>
               </div>
             </div>
           </div>
