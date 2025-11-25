@@ -1781,6 +1781,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // PUT /api/residents/:id
+// routes/residents.js (PUT /api/residents/:id)
 router.put("/:id", upload.single("photoUpload"), async (req, res) => {
   console.log("PUT /api/residents/:id hit:", {
     id: req.params.id,
@@ -2171,14 +2172,13 @@ router.get("/:id/download", async (req, res) => {
       const doc = new PDFDocument({
         margin: 30,
         size: "A4",
-        // FIX 1: RE-RESTORED bufferPages: true (Required for doc.bufferedPageRange() to work)
         bufferPages: true,
         info: {
           Title: `Resident ${template === "summary"
-            ? "Summary"
-            : template === "medical"
-              ? "Medical Record"
-              : "Details"
+              ? "Summary"
+              : template === "medical"
+                ? "Medical Record"
+                : "Details"
             } - ${resident.registrationNo || resident._id}`,
           Author: "Gharpan Organization",
           Subject: `Resident ${template.charAt(0).toUpperCase() + template.slice(1)
@@ -2335,7 +2335,7 @@ router.get("/:id/download", async (req, res) => {
         });
       };
 
-      // Fixed photo function - download images and convert to buffer
+      // Fixed photo function - download images and convert to base64
       const addPhotos = async (yPos) => {
         yPos = checkPageBreak(yPos, 200);
 
@@ -2443,7 +2443,7 @@ router.get("/:id/download", async (req, res) => {
         .fontSize(24)
         .font("Helvetica-Bold")
         .fillColor("#FFFFFF")
-        .text("Gharpan Organization", 130, 20);
+        .text("Gharpan Dashboard", 130, 20);
       doc
         .fontSize(11)
         .font("Helvetica")
@@ -2915,9 +2915,8 @@ router.get("/:id/download", async (req, res) => {
               )
               .fontSize(8)
               .font("Helvetica")
-              // FIX 2: Changed toLocaleDateString to toLocaleString and added timeZone
               .text(
-                `Page ${i + 1} of ${totalPages} | Generated: ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}`,
+                `Page ${i + 1} of ${totalPages} | Generated: ${new Date().toLocaleDateString("en-IN")} at ${new Date().toLocaleTimeString("en-IN")}`,
                 40,
                 footerY + 35,
                 { width: 520, align: 'center' }
@@ -3179,7 +3178,7 @@ router.get("/:id/print", async (req, res) => {
       .fontSize(24)
       .font("Helvetica-Bold")
       .fillColor("#FFFFFF")
-      .text("Gharpan Organization", 130, 20);
+      .text("Gharpan Dashboard", 130, 20);
     doc
       .fontSize(11)
       .font("Helvetica")
