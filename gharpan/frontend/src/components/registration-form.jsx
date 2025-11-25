@@ -455,19 +455,20 @@ function RegistrationForm() {
   };
 
   const handleNextStep = () => {
-    if (validateCurrentStep() || true) {
-      // Allow progression even with warnings
-      if (currentStep < formSteps.length) {
-        setCurrentStep(currentStep + 1);
-      }
+  if (validateCurrentStep() || true) {
+    if (currentStep < formSteps.length) {
+      setCurrentStep(currentStep + 1);
+      window.scrollTo(0, 0);
     }
-  };
+  }
+};
 
   const handlePrevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
+  if (currentStep > 1) {
+    setCurrentStep(currentStep - 1);
+    window.scrollTo(0, 0);
+  }
+};
 
   // Handle submit with proper photo field handling
   async function handleSubmit(e) {
