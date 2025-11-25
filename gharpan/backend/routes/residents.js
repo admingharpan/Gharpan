@@ -2443,7 +2443,7 @@ router.get("/:id/download", async (req, res) => {
         .fontSize(24)
         .font("Helvetica-Bold")
         .fillColor("#FFFFFF")
-        .text("Gharpan Dashboard", 130, 20);
+        .text("Gharpan Organisation", 130, 20);
       doc
         .fontSize(11)
         .font("Helvetica")
