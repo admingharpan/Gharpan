@@ -30,6 +30,23 @@ const ResidentsListing = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [previewResident, setPreviewResident] = useState(null);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [updateResident, setUpdateResident] = useState(null);
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [userRole, setUserRole] = useState("");
+
+  useEffect(() => {
+    const role = localStorage.getItem("userRole");
+    setUserRole(role);
+  }, []);
+
+  // FIXED: Better form state management using useState instead of useRef for better React practices
+  const [formData, setFormData] = useState({});
+  const [originalData, setOriginalData] = useState({});
+  const [changedFields, setChangedFields] = useState(new Set());
 
   // Sorting state
   const [sortOrder, setSortOrder] = useState("asc");
