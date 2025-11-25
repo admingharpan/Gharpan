@@ -2171,7 +2171,7 @@ router.get("/:id/download", async (req, res) => {
       const doc = new PDFDocument({
         margin: 30,
         size: "A4",
-        // FIX: RESTORED bufferPages: true for doc.bufferedPageRange() to work.
+        // FIX 1: RE-RESTORED bufferPages: true (Required for doc.bufferedPageRange() to work)
         bufferPages: true,
         info: {
           Title: `Resident ${template === "summary"
@@ -2335,7 +2335,7 @@ router.get("/:id/download", async (req, res) => {
         });
       };
 
-      // Fixed photo function - download images and convert to base64
+      // Fixed photo function - download images and convert to buffer
       const addPhotos = async (yPos) => {
         yPos = checkPageBreak(yPos, 200);
 
@@ -2504,6 +2504,22 @@ router.get("/:id/download", async (req, res) => {
             350,
             yPosition + 25
           );
+
+        yPosition = 200;
+        yPosition = addSectionHeader("ESSENTIAL INFORMATION", yPosition);
+        yPosition = addField("Name", resident.name, yPosition);
+        yPosition = addFieldPair("Gender", resident.gender, "Age", resident.age?.toString(), yPosition);
+        yPosition = addField("Health Status", resident.healthStatus, yPosition);
+        yPosition = addField("Contact", resident.mobileNo, yPosition);
+        yPosition = addField("Guardian", resident.guardianName, yPosition);
+        yPosition = addField(
+          "Documents",
+          resident.documentIds && resident.documentIds.length > 0
+            ? resident.documentIds.map((doc) => doc.name).join(", ")
+            : "None",
+          yPosition,
+          true
+        );
 
         doc.end();
       } else if (template === "medical") {
@@ -2688,13 +2704,13 @@ router.get("/:id/download", async (req, res) => {
 
         // MEDICAL DETAILS
         yPosition = addSectionHeader("MEDICAL DETAILS", yPosition);
-        yPosition = addField("Medical Conditions", resident.medicalConditions, yPos, true);
-        yPosition = addField("Allergies", resident.allergies, yPos, true);
-        yPosition = addField("Known Allergies", resident.knownAllergies, yPos, true);
-        yPosition = addField("Current Medications", resident.medications, yPos, true);
+        yPosition = addField("Medical Conditions", resident.medicalConditions, yPosition, true);
+        yPosition = addField("Allergies", resident.allergies, yPosition, true);
+        yPosition = addField("Known Allergies", resident.knownAllergies, yPosition, true);
+        yPosition = addField("Current Medications", resident.medications, yPosition, true);
         yPosition = addFieldPair("Primary Doctor", resident.primaryDoctor, "Preferred Hospital", resident.preferredHospital, yPosition);
-        yPosition = addField("Medical History", resident.medicalHistory, yPos, true);
-        yPosition = addField("Medical History Notes", resident.medicalHistoryNotes, yPos, true);
+        yPosition = addField("Medical History", resident.medicalHistory, yPosition, true);
+        yPosition = addField("Medical History Notes", resident.medicalHistoryNotes, yPosition, true);
 
         // INFORMER INFORMATION
         yPosition = addSectionHeader("INFORMER INFORMATION", yPosition);
@@ -2706,8 +2722,8 @@ router.get("/:id/download", async (req, res) => {
           resident.informationDate ? new Date(resident.informationDate).toLocaleDateString("en-IN") : "N/A",
           yPosition
         );
-        yPosition = addField("Informer Address", resident.informerAddress, yPos, true);
-        yPosition = addField("Information Details", resident.informationDetails, yPos, true);
+        yPosition = addField("Informer Address", resident.informerAddress, yPosition, true);
+        yPosition = addField("Information Details", resident.informationDetails, yPosition, true);
 
         // TRANSPORT INFORMATION
         yPosition = addSectionHeader("TRANSPORT INFORMATION", yPosition);
@@ -2721,7 +2737,7 @@ router.get("/:id/download", async (req, res) => {
           yPosition
         );
         yPosition = addField("Entrant Name", resident.entrantName, yPosition);
-        yPosition = addField("Transport Notes", resident.transportNotes, yPos, true);
+        yPosition = addField("Transport Notes", resident.transportNotes, yPosition, true);
 
         // ADMINISTRATIVE INFORMATION
         yPosition = addSectionHeader("ADMINISTRATIVE INFORMATION", yPosition);
@@ -2733,20 +2749,20 @@ router.get("/:id/download", async (req, res) => {
 
         // FINANCIAL INFORMATION
         yPosition = addSectionHeader("FINANCIAL INFORMATION", yPosition);
-        yPosition = addField("Item Description", resident.itemDescription, yPos, true);
+        yPosition = addField("Item Description", resident.itemDescription, yPosition, true);
         yPosition = addField("Item Amount (₹)", resident.itemAmount?.toString(), yPosition);
 
         // NOTES AND COMMENTS
         yPosition = addSectionHeader("NOTES AND COMMENTS", yPosition);
-        yPosition = addField("Comments", resident.comments, yPos, true);
-        yPosition = addField("General Comments", resident.generalComments, yPos, true);
-        yPosition = addField("Medical Notes", resident.medicalNotes, yPos, true);
-        yPosition = addField("Behavioral Notes", resident.behavioralNotes, yPos, true);
-        yPosition = addField("Care Instructions", resident.careInstructions, yPos, true);
+        yPosition = addField("Comments", resident.comments, yPosition, true);
+        yPosition = addField("General Comments", resident.generalComments, yPosition, true);
+        yPosition = addField("Medical Notes", resident.medicalNotes, yPosition, true);
+        yPosition = addField("Behavioral Notes", resident.behavioralNotes, yPosition, true);
+        yPosition = addField("Care Instructions", resident.careInstructions, yPosition, true);
 
         // UPDATE TRACKING
         yPosition = addSectionHeader("UPDATE TRACKING", yPosition);
-        yPosition = addField("Update Summary", resident.updateSummary, yPos, true);
+        yPosition = addField("Update Summary", resident.updateSummary, yPosition, true);
         yPosition = addFieldPair("Updated By", resident.updatedBy, "Last Update Date", resident.lastUpdateDate ? new Date(resident.lastUpdateDate).toLocaleString("en-IN") : "N/A", yPosition);
         yPosition = addFieldPair(
           "Created At",
@@ -2759,7 +2775,7 @@ router.get("/:id/download", async (req, res) => {
 
         // MEDIA INFORMATION
         yPosition = addSectionHeader("MEDIA INFORMATION", yPosition);
-        yPosition = addField("Video URL", resident.videoUrl, yPos, true);
+        yPosition = addField("Video URL", resident.videoUrl, yPosition, true);
         yPosition = addFieldPair(
           "Photo Before Admission",
           resident.photoBeforeAdmission ? "Available" : "Not Available",
@@ -2775,11 +2791,11 @@ router.get("/:id/download", async (req, res) => {
           const docList = resident.documentIds.map((doc, idx) =>
             `${idx + 1}. ${doc.name || 'Document'} ${doc.type ? `(${doc.type})` : ''} (${doc.mimeType})`
           ).join(", ");
-          yPosition = addField("Uploaded Documents", docList, yPos, true);
+          yPosition = addField("Uploaded Documents", docList, yPosition, true);
 
           // Then try to embed document content
           for (const document of resident.documentIds) {
-            yPosition = checkPageBreak(yPos, 200);
+            yPosition = checkPageBreak(yPosition, 200);
 
             // Document header
             doc
@@ -2807,21 +2823,21 @@ router.get("/:id/download", async (req, res) => {
                 yPosition += 190;
               } else if (document.mimeType === 'application/pdf') {
                 // For PDFs, add a note that PDF content is attached
-                yPosition = addField("PDF Document", "PDF document available - content embedded separately", yPos, true);
+                yPosition = addField("PDF Document", "PDF document available - content embedded separately", yPosition, true);
                 // Note: Merging PDFs would require additional libraries like pdf-lib
               } else {
                 // For other document types
-                yPosition = addField("Document Content", `Document of type ${document.mimeType} is available but cannot be displayed inline`, yPos, true);
+                yPosition = addField("Document Content", `Document of type ${document.mimeType} is available but cannot be displayed inline`, yPosition, true);
               }
             } catch (err) {
               console.log(`Error loading document ${document.name}:`, err);
-              yPosition = addField("Document Status", "Document unavailable", yPos, true);
+              yPosition = addField("Document Status", "Document unavailable", yPosition, true);
             }
 
             yPosition += 10; // Add some space between documents
           }
         } else {
-          yPosition = addField("Uploaded Documents", "No documents uploaded", yPos, true);
+          yPosition = addField("Uploaded Documents", "No documents uploaded", yPosition, true);
         }
 
         // CARE EVENTS
@@ -2829,7 +2845,7 @@ router.get("/:id/download", async (req, res) => {
           yPosition = addSectionHeader("CARE EVENTS HISTORY", yPosition);
 
           resident.careEvents.forEach((event, index) => {
-            yPosition = checkPageBreak(yPos, 150);
+            yPosition = checkPageBreak(yPosition, 150);
 
             // Event header
             doc
@@ -2844,7 +2860,7 @@ router.get("/:id/download", async (req, res) => {
 
             yPosition += 30;
 
-            yPosition = addField("Description", event.description, yPos, true);
+            yPosition = addField("Description", event.description, yPosition, true);
             yPosition = addFieldPair(
               "Date",
               event.date ? new Date(event.date).toLocaleDateString("en-IN") : "N/A",
@@ -2852,7 +2868,7 @@ router.get("/:id/download", async (req, res) => {
               event.doctor,
               yPosition
             );
-            yPosition = addField("Medications", event.medications, yPos, true);
+            yPosition = addField("Medications", event.medications, yPosition, true);
             yPosition = addFieldPair(
               "Next Visit",
               event.nextVisit ? new Date(event.nextVisit).toLocaleDateString("en-IN") : "N/A",
@@ -2860,7 +2876,7 @@ router.get("/:id/download", async (req, res) => {
               event.status,
               yPosition
             );
-            yPosition = addField("Remarks", event.remarks, yPos, true);
+            yPosition = addField("Remarks", event.remarks, yPosition, true);
             yPosition = addFieldPair(
               "Created By",
               event.createdBy,
@@ -2899,8 +2915,8 @@ router.get("/:id/download", async (req, res) => {
               )
               .fontSize(8)
               .font("Helvetica")
+              // FIX 2: Changed toLocaleDateString to toLocaleString and added timeZone
               .text(
-                // This is the line with the requested timeZone fix:
                 `Page ${i + 1} of ${totalPages} | Generated: ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}`,
                 40,
                 footerY + 35,
