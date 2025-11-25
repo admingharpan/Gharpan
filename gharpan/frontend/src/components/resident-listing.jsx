@@ -16,6 +16,8 @@ import {
   ArrowUpDown,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useToast, ToastContainer } from "./ToastNotification";
+import ConfirmDialog from "./ConfirmDialog";
 
 const ResidentsListing = () => {
   const [residents, setResidents] = useState([]);
@@ -37,6 +39,8 @@ const ResidentsListing = () => {
   const [updateResident, setUpdateResident] = useState(null);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [userRole, setUserRole] = useState("");
+  const { toasts, showSuccess, showError, showInfo, removeToast } = useToast();
+  const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, title: "", message: "", onConfirm: null });
 
   useEffect(() => {
     const role = localStorage.getItem("userRole");
@@ -609,58 +613,51 @@ const ResidentsListing = () => {
     registrationNo,
     residentName
   ) => {
-    const confirmDownload = window.confirm(
-      `Download resident details for:\n\n` +
-      `Name: ${residentName || "N/A"}\n` +
-      `Registration No: ${registrationNo || "N/A"}\n\n` +
-      `This will generate a comprehensive PDF report with all resident information.\n\n` +
-      `Do you want to proceed with the download?`
-    );
+    setConfirmDialog({
+      isOpen: true,
+      title: "Download Resident Details",
+      message: `Download resident details for:\n\nName: ${residentName || "N/A"}\nRegistration No: ${registrationNo || "N/A"}\n\nThis will generate a comprehensive PDF report with all resident information.\n\nDo you want to proceed with the download?`,
+      onConfirm: async () => {
+        setConfirmDialog({ isOpen: false, title: "", message: "", onConfirm: null });
 
-    if (!confirmDownload) {
-      return;
-    }
+        try {
+          console.log("Downloading resident details for:", residentId);
+          showInfo("Generating PDF report... Please wait.");
 
-    try {
-      console.log("Downloading resident details for:", residentId);
-      const originalError = error;
-      setError("Generating PDF report... Please wait.");
+          const response = await fetch(
+            `/api/residents/${residentId}/download?format=pdf&template=detailed`
+          );
 
-      const response = await fetch(
-        `/api/residents/${residentId}/download?format=pdf&template=detailed`
-      );
+          console.log("Download response status:", response.status);
 
-      console.log("Download response status:", response.status);
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Download error response:", errorText);
+            throw new Error(
+              `Download failed with status ${response.status}: ${errorText}`
+            );
+          }
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Download error response:", errorText);
-        throw new Error(
-          `Download failed with status ${response.status}: ${errorText}`
-        );
+          const blob = await response.blob();
+          console.log("Downloaded blob size:", blob.size, "bytes");
+
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `resident-${registrationNo || residentId}-details.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+
+          console.log("Resident details downloaded successfully as PDF");
+          showSuccess("PDF downloaded successfully!");
+        } catch (error) {
+          console.error("Download error:", error);
+          showError(`Failed to download resident details: ${error.message}`);
+        }
       }
-
-      const blob = await response.blob();
-      console.log("Downloaded blob size:", blob.size, "bytes");
-
-      setError(originalError);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `resident-${registrationNo || residentId}-details.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      console.log("Resident details downloaded successfully as PDF");
-      const tempError = error;
-      setError("PDF downloaded successfully!");
-      setTimeout(() => setError(tempError), 3000);
-    } catch (error) {
-      console.error("Download error:", error);
-      setError(`Failed to download resident details: ${error.message}`);
-    }
+    });
   };
 
   // Print individual resident details
@@ -671,8 +668,7 @@ const ResidentsListing = () => {
   ) => {
     try {
       console.log("Preparing to print resident details for:", residentId);
-      const originalError = error;
-      setError("Preparing PDF for printing... Please wait.");
+      showInfo("Preparing PDF for printing... Please wait.");
 
       const printUrl = `/api/residents/${residentId}/print?template=detailed`;
       const printWindow = window.open(
@@ -682,22 +678,19 @@ const ResidentsListing = () => {
       );
 
       if (printWindow) {
-        setError(originalError);
         printWindow.onload = () => {
           setTimeout(() => {
             printWindow.print();
             console.log("Print dialog opened successfully");
-            const tempError = error;
-            setError("Print dialog opened successfully!");
-            setTimeout(() => setError(tempError), 3000);
+            showSuccess("Print dialog opened successfully!");
           }, 1000);
         };
       } else {
-        setError("Pop-up blocked. Please allow pop-ups for printing.");
+        showError("Pop-up blocked. Please allow pop-ups for printing.");
       }
     } catch (error) {
       console.error("Print error:", error);
-      setError(`Failed to prepare PDF for printing: ${error.message}`);
+      showError(`Failed to prepare PDF for printing: ${error.message}`);
     }
   };
 
@@ -714,7 +707,7 @@ const ResidentsListing = () => {
       setIsPreviewOpen(true);
     } catch (error) {
       console.error("Preview error:", error);
-      setError(`Failed to preview resident details: ${error.message}`);
+      showError(`Failed to preview resident details: ${error.message}`);
     }
   };
 
@@ -725,11 +718,13 @@ const ResidentsListing = () => {
     setPreviewResident(null);
   };
 
+
   // Close details modal
   const closeDetails = () => {
     setShowDetails(false);
     setSelectedResident(null);
   };
+
 
   // Handle delete confirmation
   const handleDeleteClick = (resident) => {
@@ -3590,6 +3585,19 @@ const ResidentsListing = () => {
 
       {/* Delete Confirmation Modal */}
       <DeleteConfirmModal />
+
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ isOpen: false, title: "", message: "", onConfirm: null })}
+        type="info"
+      />
     </div>
   );
 };

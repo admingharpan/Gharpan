@@ -61,9 +61,9 @@ const uploadPhotoToFirebase = async (file, residentId, photoType) => {
   try {
     const fileName = `residents/${residentId}/${photoType}_${Date.now()}_${file.originalname}`;
     const fileUpload = bucket.file(fileName);
-    
+
     await fileUpload.save(file.buffer, {
-      metadata: { 
+      metadata: {
         contentType: file.mimetype,
         metadata: {
           photoType: photoType,
@@ -71,12 +71,12 @@ const uploadPhotoToFirebase = async (file, residentId, photoType) => {
         }
       },
     });
-    
+
     const [downloadUrl] = await fileUpload.getSignedUrl({
       action: "read",
       expires: "03-09-2491",
     });
-    
+
     console.log(`${photoType} photo uploaded:`, { fileName, downloadUrl });
     return downloadUrl;
   } catch (error) {
@@ -97,31 +97,31 @@ const parseBody = (req, res, next) => {
     photoUpload(req, res, (err) => {
       if (err) {
         console.error("Photo upload error:", err);
-        return res.status(400).json({ 
-          success: false, 
-          message: err.message 
+        return res.status(400).json({
+          success: false,
+          message: err.message
         });
       }
-      
+
       // Parse documentIds if present
       if (req.body.documentIds) {
         try {
           req.body.documentIds = JSON.parse(req.body.documentIds);
         } catch (err) {
           console.error("Error parsing documentIds:", err);
-          return res.status(400).json({ 
-            success: false, 
-            message: "Invalid documentIds format" 
+          return res.status(400).json({
+            success: false,
+            message: "Invalid documentIds format"
           });
         }
       }
-      
+
       next();
     });
   } else {
-    res.status(400).json({ 
-      success: false, 
-      message: "Unsupported Content-Type" 
+    res.status(400).json({
+      success: false,
+      message: "Unsupported Content-Type"
     });
   }
 };
@@ -163,7 +163,7 @@ router.post("/", photoUpload, async (req, res) => {
       ...residentData,
       documentIds,
     });
-    
+
     // Restructure address data
     if (
       residentData.state ||
@@ -209,8 +209,8 @@ router.post("/", photoUpload, async (req, res) => {
       if (req.files.photoBeforeAdmission && req.files.photoBeforeAdmission[0]) {
         try {
           photoBeforeAdmissionUrl = await uploadPhotoToFirebase(
-            req.files.photoBeforeAdmission[0], 
-            savedResident._id, 
+            req.files.photoBeforeAdmission[0],
+            savedResident._id,
             'before_admission'
           );
           savedResident.photoBeforeAdmission = photoBeforeAdmissionUrl;
@@ -223,8 +223,8 @@ router.post("/", photoUpload, async (req, res) => {
       if (req.files.photoAfterAdmission && req.files.photoAfterAdmission[0]) {
         try {
           photoAfterAdmissionUrl = await uploadPhotoToFirebase(
-            req.files.photoAfterAdmission[0], 
-            savedResident._id, 
+            req.files.photoAfterAdmission[0],
+            savedResident._id,
             'after_admission'
           );
           savedResident.photoAfterAdmission = photoAfterAdmissionUrl;
@@ -237,8 +237,8 @@ router.post("/", photoUpload, async (req, res) => {
       if (req.files.photo && req.files.photo[0]) {
         try {
           legacyPhotoUrl = await uploadPhotoToFirebase(
-            req.files.photo[0], 
-            savedResident._id, 
+            req.files.photo[0],
+            savedResident._id,
             'legacy_photo'
           );
           savedResident.photoUrl = legacyPhotoUrl;
@@ -297,25 +297,25 @@ router.put("/:id", photoUpload, async (req, res) => {
     body: req.body,
     files: req.files ? Object.keys(req.files) : "No files uploaded",
   });
-  
+
   try {
     if (!isValidObjectId(req.params.id)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Invalid resident ID" 
+      return res.status(400).json({
+        success: false,
+        message: "Invalid resident ID"
       });
     }
 
     const updateData = { ...req.body };
-    
+
     // Handle photo uploads for updates
     if (req.files) {
       // Handle photoBeforeAdmission update
       if (req.files.photoBeforeAdmission && req.files.photoBeforeAdmission[0]) {
         try {
           const photoUrl = await uploadPhotoToFirebase(
-            req.files.photoBeforeAdmission[0], 
-            req.params.id, 
+            req.files.photoBeforeAdmission[0],
+            req.params.id,
             'before_admission'
           );
           updateData.photoBeforeAdmission = photoUrl;
@@ -328,8 +328,8 @@ router.put("/:id", photoUpload, async (req, res) => {
       if (req.files.photoAfterAdmission && req.files.photoAfterAdmission[0]) {
         try {
           const photoUrl = await uploadPhotoToFirebase(
-            req.files.photoAfterAdmission[0], 
-            req.params.id, 
+            req.files.photoAfterAdmission[0],
+            req.params.id,
             'after_admission'
           );
           updateData.photoAfterAdmission = photoUrl;
@@ -342,8 +342,8 @@ router.put("/:id", photoUpload, async (req, res) => {
       if (req.files.photo && req.files.photo[0]) {
         try {
           const photoUrl = await uploadPhotoToFirebase(
-            req.files.photo[0], 
-            req.params.id, 
+            req.files.photo[0],
+            req.params.id,
             'legacy_photo'
           );
           updateData.photoUrl = photoUrl;
@@ -360,9 +360,9 @@ router.put("/:id", photoUpload, async (req, res) => {
         !Array.isArray(updateData.documentIds) ||
         !updateData.documentIds.every((id) => isValidObjectId(id))
       ) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Invalid documentIds format" 
+        return res.status(400).json({
+          success: false,
+          message: "Invalid documentIds format"
         });
       }
       updateData.documentIds = updateData.documentIds.map(
@@ -382,7 +382,7 @@ router.put("/:id", photoUpload, async (req, res) => {
         latitude: updateData.latitude,
         longitude: updateData.longitude
       };
-      
+
       // Remove individual fields after consolidating into address object
       delete updateData.state;
       delete updateData.district;
@@ -399,11 +399,11 @@ router.put("/:id", photoUpload, async (req, res) => {
       updateData,
       { new: true }
     );
-    
+
     if (!resident) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "Resident not found" 
+      return res.status(404).json({
+        success: false,
+        message: "Resident not found"
       });
     }
 
@@ -480,10 +480,8 @@ router.get("/export", async (req, res) => {
         : "N/A",
       Phone: resident.mobileNo || "N/A",
       Address: resident.address
-        ? `${resident.address.fullAddress || ""}, ${
-            resident.address.district || ""
-          }, ${resident.address.state || ""}, ${
-            resident.address.country || ""
+        ? `${resident.address.fullAddress || ""}, ${resident.address.district || ""
+          }, ${resident.address.state || ""}, ${resident.address.country || ""
           }`.replace(/^,\s*|,\s*$/g, "")
         : "N/A",
       "Guardian Name": resident.guardianName || "N/A",
@@ -577,15 +575,15 @@ router.get("/:id", async (req, res) => {
     const resident = await Resident.findById(req.params.id).populate("documentIds");
     if (!resident) {
       console.log("Resident not found:", req.params.id);
-      return res.status(404).json({ 
-        success: false, 
-        message: "Resident not found" 
+      return res.status(404).json({
+        success: false,
+        message: "Resident not found"
       });
     }
 
     // UPDATED: Ensure all fields are included in response
     const residentData = resident.toObject();
-    
+
     // Add photo information for display
     residentData.photos = {
       before: resident.photoBeforeAdmission || null,
@@ -603,7 +601,7 @@ router.get("/:id", async (req, res) => {
         legacy: !!resident.photoUrl
       }
     });
-    
+
     res.json({ success: true, data: residentData });
   } catch (error) {
     console.error("Error in GET /api/residents/:id:", {
@@ -1006,9 +1004,8 @@ router.get("/notifications", async (req, res) => {
         id: "recent_registrations",
         type: "info",
         title: "New Registrations",
-        message: `${recentCount} new resident${
-          recentCount > 1 ? "s" : ""
-        } registered in the last 7 days`,
+        message: `${recentCount} new resident${recentCount > 1 ? "s" : ""
+          } registered in the last 7 days`,
         timestamp: new Date(),
         priority: "low",
       });
@@ -1026,9 +1023,8 @@ router.get("/notifications", async (req, res) => {
         id: "health_concerns",
         type: "warning",
         title: "Health Attention Required",
-        message: `${healthConcerns} resident${
-          healthConcerns > 1 ? "s" : ""
-        } may need immediate health attention`,
+        message: `${healthConcerns} resident${healthConcerns > 1 ? "s" : ""
+          } may need immediate health attention`,
         timestamp: new Date(),
         priority: "high",
       });
@@ -1047,9 +1043,8 @@ router.get("/notifications", async (req, res) => {
         id: "incomplete_records",
         type: "warning",
         title: "Incomplete Records",
-        message: `${incompleteRecords} record${
-          incompleteRecords > 1 ? "s have" : " has"
-        } missing important information`,
+        message: `${incompleteRecords} record${incompleteRecords > 1 ? "s have" : " has"
+          } missing important information`,
         timestamp: new Date(),
         priority: "medium",
       });
@@ -1315,13 +1310,13 @@ router.get("/stats/enhanced", async (req, res) => {
     const growthRate =
       lastMonthRegistrations > 0
         ? (
-            ((thisMonthRegistrations - lastMonthRegistrations) /
-              lastMonthRegistrations) *
-            100
-          ).toFixed(1)
+          ((thisMonthRegistrations - lastMonthRegistrations) /
+            lastMonthRegistrations) *
+          100
+        ).toFixed(1)
         : thisMonthRegistrations > 0
-        ? 100
-        : 0;
+          ? 100
+          : 0;
 
     res.json({
       success: true,
@@ -1368,8 +1363,8 @@ router.get("/stats/enhanced", async (req, res) => {
               growthRate > 0
                 ? `${growthRate}% growth this month`
                 : growthRate < 0
-                ? `${Math.abs(growthRate)}% decrease this month`
-                : "No growth this month",
+                  ? `${Math.abs(growthRate)}% decrease this month`
+                  : "No growth this month",
             trend: growthRate > 0 ? "up" : growthRate < 0 ? "down" : "stable",
           },
           {
@@ -1384,9 +1379,8 @@ router.get("/stats/enhanced", async (req, res) => {
             type: "activity",
             message:
               todayRegistrations > 0
-                ? `${todayRegistrations} new registration${
-                    todayRegistrations > 1 ? "s" : ""
-                  } today`
+                ? `${todayRegistrations} new registration${todayRegistrations > 1 ? "s" : ""
+                } today`
                 : "No new registrations today",
             trend: todayRegistrations > 0 ? "active" : "quiet",
           },
@@ -1802,9 +1796,8 @@ router.put("/:id", upload.single("photoUpload"), async (req, res) => {
 
     const updateData = req.body;
     if (req.file) {
-      const fileName = `residents/${req.params.id}/${Date.now()}_${
-        req.file.originalname
-      }`;
+      const fileName = `residents/${req.params.id}/${Date.now()}_${req.file.originalname
+        }`;
       const fileUpload = bucket.file(fileName);
       await fileUpload.save(req.file.buffer, {
         metadata: { contentType: req.file.mimetype },
@@ -1974,8 +1967,7 @@ router.get("/:id/preview", async (req, res) => {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      `inline; filename=resident-${
-        resident.registrationNo || resident._id
+      `inline; filename=resident-${resident.registrationNo || resident._id
       }-preview.pdf`
     );
     doc.pipe(res);
@@ -2182,17 +2174,15 @@ router.get("/:id/download", async (req, res) => {
         size: "A4",
         bufferPages: true,
         info: {
-          Title: `Resident ${
-            template === "summary"
+          Title: `Resident ${template === "summary"
               ? "Summary"
               : template === "medical"
-              ? "Medical Record"
-              : "Details"
-          } - ${resident.registrationNo || resident._id}`,
+                ? "Medical Record"
+                : "Details"
+            } - ${resident.registrationNo || resident._id}`,
           Author: "Gharpan Organization",
-          Subject: `Resident ${
-            template.charAt(0).toUpperCase() + template.slice(1)
-          } Report`,
+          Subject: `Resident ${template.charAt(0).toUpperCase() + template.slice(1)
+            } Report`,
           Keywords: "resident, registration, details, gharpan, " + template,
         },
       });
@@ -2206,8 +2196,7 @@ router.get("/:id/download", async (req, res) => {
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader(
         "Content-Disposition",
-        `attachment; filename=resident-${
-          resident.registrationNo || resident._id
+        `attachment; filename=resident-${resident.registrationNo || resident._id
         }-${template}.pdf`
       );
       doc.pipe(res);
@@ -2227,12 +2216,12 @@ router.get("/:id/download", async (req, res) => {
       // Improved field rendering with no overlap
       const addField = (label, value, yPos, fullWidth = false) => {
         yPos = checkPageBreak(yPos, 40);
-        
+
         const xPos = 40;
         const fieldWidth = fullWidth ? 520 : 250;
         const labelWidth = 140;
         const valueWidth = fieldWidth - labelWidth - 10;
-        
+
         // Calculate height needed for value text
         const valueText = value || "N/A";
         let lines = 1;
@@ -2240,18 +2229,18 @@ router.get("/:id/download", async (req, res) => {
           lines = Math.ceil(valueText.length / 45);
         }
         const fieldHeight = Math.max(25, lines * 12 + 10);
-        
+
         doc
           .rect(xPos, yPos, fieldWidth, fieldHeight)
           .fillAndStroke(creamBackground, "#E5E7EB")
           .lineWidth(0.5);
-        
+
         doc
           .fontSize(9)
           .font("Helvetica-Bold")
           .fillColor(primaryGreen)
           .text(label + ":", xPos + 5, yPos + 8, { width: labelWidth - 5 });
-        
+
         doc
           .fontSize(9)
           .font("Helvetica")
@@ -2260,20 +2249,20 @@ router.get("/:id/download", async (req, res) => {
             width: valueWidth,
             align: "left",
           });
-        
+
         return yPos + fieldHeight + 5;
       };
 
       // Two column layout for compact fields
       const addFieldPair = (label1, value1, label2, value2, yPos) => {
         yPos = checkPageBreak(yPos, 40);
-        
+
         const xPos1 = 40;
         const xPos2 = 310;
         const fieldWidth = 250;
         const labelWidth = 110;
         const valueWidth = fieldWidth - labelWidth - 10;
-        
+
         // Left field
         doc
           .rect(xPos1, yPos, fieldWidth, 25)
@@ -2292,7 +2281,7 @@ router.get("/:id/download", async (req, res) => {
             width: valueWidth,
             align: "left",
           });
-        
+
         // Right field
         doc
           .rect(xPos2, yPos, fieldWidth, 25)
@@ -2311,7 +2300,7 @@ router.get("/:id/download", async (req, res) => {
             width: valueWidth,
             align: "left",
           });
-        
+
         return yPos + 30;
       };
 
@@ -2454,7 +2443,7 @@ router.get("/:id/download", async (req, res) => {
         .fontSize(24)
         .font("Helvetica-Bold")
         .fillColor("#FFFFFF")
-        .text("Gharpan Dashboard", 130, 20);
+        .text("Gharpan Organization", 130, 20);
       doc
         .fontSize(11)
         .font("Helvetica")
@@ -2568,8 +2557,7 @@ router.get("/:id/download", async (req, res) => {
             yPosition + 25
           )
           .text(
-            `Age: ${resident.age || "N/A"} | Gender: ${
-              resident.gender || "N/A"
+            `Age: ${resident.age || "N/A"} | Gender: ${resident.gender || "N/A"
             }`,
             50,
             yPosition + 40
@@ -2587,7 +2575,7 @@ router.get("/:id/download", async (req, res) => {
         yPosition = addField("Health Status", resident.healthStatus, yPosition);
         yPosition = addFieldPair("Blood Group", resident.bloodGroup, "Weight (kg)", resident.weight?.toString(), yPosition);
         yPosition = addFieldPair("Height (cm)", resident.height?.toString(), "Disability", resident.disabilityStatus, yPosition);
-        
+
         yPosition = addSectionHeader("MEDICAL CONDITIONS", yPosition);
         yPosition = addField("Medical Conditions", resident.medicalConditions, yPosition, true);
         yPosition = addField("Allergies", resident.allergies, yPosition, true);
@@ -2638,18 +2626,16 @@ router.get("/:id/download", async (req, res) => {
             yPosition + 35
           )
           .text(
-            `Admission Date: ${
-              resident.admissionDate
-                ? new Date(resident.admissionDate).toLocaleDateString("en-IN")
-                : "N/A"
+            `Admission Date: ${resident.admissionDate
+              ? new Date(resident.admissionDate).toLocaleDateString("en-IN")
+              : "N/A"
             }`,
             45,
             yPosition + 50
           );
         doc
           .text(
-            `Age: ${resident.age || "N/A"} years | Gender: ${
-              resident.gender || "N/A"
+            `Age: ${resident.age || "N/A"} years | Gender: ${resident.gender || "N/A"
             }`,
             300,
             yPosition + 35
@@ -2857,10 +2843,10 @@ router.get("/:id/download", async (req, res) => {
         // CARE EVENTS
         if (resident.careEvents && resident.careEvents.length > 0) {
           yPosition = addSectionHeader("CARE EVENTS HISTORY", yPosition);
-          
+
           resident.careEvents.forEach((event, index) => {
             yPosition = checkPageBreak(yPosition, 150);
-            
+
             // Event header
             doc
               .rect(40, yPosition, 520, 25)
@@ -2871,9 +2857,9 @@ router.get("/:id/download", async (req, res) => {
               .font("Helvetica-Bold")
               .fillColor("#1e40af")
               .text(`Event ${index + 1}: ${event.type || 'General Care'}`, 50, yPosition + 8);
-            
+
             yPosition += 30;
-            
+
             yPosition = addField("Description", event.description, yPosition, true);
             yPosition = addFieldPair(
               "Date",
@@ -2898,7 +2884,7 @@ router.get("/:id/download", async (req, res) => {
               event.createdAt ? new Date(event.createdAt).toLocaleString("en-IN") : "N/A",
               yPosition
             );
-            
+
             yPosition += 10;
           });
         }
@@ -2956,10 +2942,8 @@ router.get("/:id/download", async (req, res) => {
           Age: resident.age || "N/A",
           "Mobile Number": resident.mobileNo || "N/A",
           Address: resident.address
-            ? `${resident.address.fullAddress || ""}, ${
-                resident.address.district || ""
-              }, ${resident.address.state || ""}, ${
-                resident.address.country || ""
+            ? `${resident.address.fullAddress || ""}, ${resident.address.district || ""
+              }, ${resident.address.state || ""}, ${resident.address.country || ""
               }`.replace(/^,\s*|,\s*$/g, "")
             : "N/A",
           "Guardian Name": resident.guardianName || "N/A",
@@ -3022,9 +3006,8 @@ router.get("/:id/download", async (req, res) => {
       XLSX.utils.book_append_sheet(wb, ws, "Resident Details");
       const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "buffer" });
 
-      const filename = `resident_${
-        resident.registrationNo || resident._id
-      }_${template}_${new Date().toISOString().split("T")[0]}.xlsx`;
+      const filename = `resident_${resident.registrationNo || resident._id
+        }_${template}_${new Date().toISOString().split("T")[0]}.xlsx`;
       res.setHeader(
         "Content-Disposition",
         `attachment; filename="${filename}"`
@@ -3089,8 +3072,7 @@ router.get("/:id/print", async (req, res) => {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      `inline; filename=resident-${
-        resident.registrationNo || resident._id
+      `inline; filename=resident-${resident.registrationNo || resident._id
       }-print.pdf`
     );
     doc.pipe(res);
@@ -3196,7 +3178,7 @@ router.get("/:id/print", async (req, res) => {
       .fontSize(24)
       .font("Helvetica-Bold")
       .fillColor("#FFFFFF")
-      .text("Gharpan Dashboard", 130, 20);
+      .text("Gharpan Organization", 130, 20);
     doc
       .fontSize(11)
       .font("Helvetica")
@@ -3252,18 +3234,16 @@ router.get("/:id/print", async (req, res) => {
         yPosition + 35
       )
       .text(
-        `Admission Date: ${
-          resident.admissionDate
-            ? new Date(resident.admissionDate).toLocaleDateString("en-IN")
-            : "N/A"
+        `Admission Date: ${resident.admissionDate
+          ? new Date(resident.admissionDate).toLocaleDateString("en-IN")
+          : "N/A"
         }`,
         45,
         yPosition + 50
       );
     doc
       .text(
-        `Age: ${resident.age || "N/A"} years | Gender: ${
-          resident.gender || "N/A"
+        `Age: ${resident.age || "N/A"} years | Gender: ${resident.gender || "N/A"
         }`,
         300,
         yPosition + 35
@@ -3303,7 +3283,7 @@ router.get("/:id/print", async (req, res) => {
       false
     );
     yPosition = Math.max(currentY, yPosition + 70);
-    
+
     // FIX: Removed emojis from section headers
     yPosition = addSectionHeader("CONTACT", yPosition);
     currentY = yPosition;

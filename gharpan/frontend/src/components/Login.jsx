@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, User, Lock, Leaf, Heart, Users } from "lucide-react";
+import { useToast, ToastContainer } from "./ToastNotification";
 
 function Login({ onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -8,6 +9,7 @@ function Login({ onLoginSuccess }) {
     password: "",
   });
   const [error, setError] = useState("");
+  const { toasts, showSuccess, removeToast } = useToast();
 
   const validAdmins = {
     SuperAdmin: { password: "Gharpan", role: "superadmin" },
@@ -58,8 +60,10 @@ function Login({ onLoginSuccess }) {
     localStorage.setItem("userRole", admin.role);
 
     setTimeout(() => {
-      alert("Login successful!");
-      onLoginSuccess && onLoginSuccess();
+      showSuccess("Login successful! Redirecting to dashboard...");
+      setTimeout(() => {
+        onLoginSuccess && onLoginSuccess();
+      }, 1000);
     }, 300);
   };
 
@@ -291,6 +295,7 @@ function Login({ onLoginSuccess }) {
           </div>
         </div>
       </div>
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 }
