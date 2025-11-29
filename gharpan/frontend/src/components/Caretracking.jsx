@@ -3,8 +3,6 @@ import { Card, Row, Col, Button, Modal, Form } from "react-bootstrap";
 import "./Caretracking.css";
 
 const CareTracking = () => {
-  // ... (All your state and logic functions remain exactly the same) ...
-  // No changes needed from line 6 to 480
   const [alert, setAlert] = useState({ show: false, message: "", type: "" });
   const [residents, setResidents] = useState([]);
   const [selectedResident, setSelectedResident] = useState(null);
@@ -40,6 +38,11 @@ const CareTracking = () => {
     remarks: "",
   });
 
+  // NEW: Document handling states
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [editSelectedFiles, setEditSelectedFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
   useEffect(() => {
     fetchResidents();
   }, []);
@@ -50,7 +53,6 @@ const CareTracking = () => {
       const response = await fetch("/api/residents");
       if (response.ok) {
         const result = await response.json();
-        // Handle the API response structure
         const residentsData = result.success ? result.data : result;
         setResidents(residentsData || []);
         setError(null);
@@ -65,21 +67,18 @@ const CareTracking = () => {
       setLoading(false);
     }
   }, []);
+
   const fetchCareEvents = async (residentId) => {
     try {
       if (!residentId) return;
 
       console.log("Fetching care events for resident:", residentId);
-      const response = await fetch(
-        `/api/residents/${residentId}/care-events`
-      );
+      const response = await fetch(`/api/residents/${residentId}/care-events`);
       console.log("Care events response status:", response.status);
 
       if (response.ok) {
         const result = await response.json();
         console.log("Care events API response:", result);
-
-        // Handle the API response structure
         const eventsData = result.success ? result.data : result;
         console.log("Processed events data:", eventsData);
         setCareEvents(eventsData || []);
@@ -98,15 +97,99 @@ const CareTracking = () => {
     fetchCareEvents(resident._id);
   };
 
-  // Replace the existing handleAddEvent function with this updated version
+  // NEW: Handle file selection for new event
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    
+    // Validate files
+    const validFiles = files.filter(file => {
+      if (file.size > 10 * 1024 * 1024) {
+        setAlert({
+          show: true,
+          type: "danger",
+          message: `File ${file.name} is too large. Maximum size is 10MB.`
+        });
+        return false;
+      }
+      return true;
+    });
+
+    setSelectedFiles(prevFiles => [...prevFiles, ...validFiles]);
+  };
+
+  // NEW: Handle file selection for edit event
+  const handleEditFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    
+    const validFiles = files.filter(file => {
+      if (file.size > 10 * 1024 * 1024) {
+        setAlert({
+          show: true,
+          type: "danger",
+          message: `File ${file.name} is too large. Maximum size is 10MB.`
+        });
+        return false;
+      }
+      return true;
+    });
+
+    setEditSelectedFiles(prevFiles => [...prevFiles, ...validFiles]);
+  };
+
+  // NEW: Remove file from selection
+  const removeSelectedFile = (index) => {
+    setSelectedFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+  };
+
+  // NEW: Remove file from edit selection
+  const removeEditSelectedFile = (index) => {
+    setEditSelectedFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+  };
+
+  // NEW: Delete document from existing event
+  const handleDeleteDocument = async (eventId, docIndex) => {
+    if (!window.confirm("Are you sure you want to delete this document?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/residents/${selectedResident._id}/care-events/${eventId}/documents/${docIndex}`,
+        { method: "DELETE" }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setAlert({
+          show: true,
+          type: "success",
+          message: "Document deleted successfully!"
+        });
+        fetchCareEvents(selectedResident._id);
+        if (selectedEvent && selectedEvent._id === eventId) {
+          const updatedEvent = careEvents.find(e => e._id === eventId);
+          setSelectedEvent(updatedEvent);
+        }
+      } else {
+        throw new Error(data.message || "Failed to delete document");
+      }
+    } catch (err) {
+      console.error("Failed to delete document:", err);
+      setAlert({
+        show: true,
+        type: "danger",
+        message: `Failed to delete document: ${err.message}`
+      });
+    }
+  };
+
+  // UPDATED: Handle add event with documents
   const handleAddEvent = async (e) => {
     e.preventDefault();
 
     console.log("=== ADD EVENT DEBUG ===");
     console.log("Form submitted with newEvent state:", newEvent);
-    console.log("Status value specifically:", newEvent.status);
-    console.log("Status type:", typeof newEvent.status);
-    console.log("Status length:", newEvent.status?.length);
 
     try {
       // Validate required fields
@@ -114,17 +197,12 @@ const CareTracking = () => {
         setAlert({
           show: true,
           type: "danger",
-          message:
-            "Please fill in Date, Event Type, and Description (required fields)",
+          message: "Please fill in Date, Event Type, and Description (required fields)",
         });
         return;
       }
 
-      // Validate description length
-      if (
-        newEvent.description.length < 1 ||
-        newEvent.description.length > 1000
-      ) {
+      if (newEvent.description.length < 1 || newEvent.description.length > 1000) {
         setAlert({
           show: true,
           type: "danger",
@@ -133,37 +211,41 @@ const CareTracking = () => {
         return;
       }
 
-      // Format the data with proper date handling
-      const eventData = {
-        type: newEvent.type.trim(),
-        description: newEvent.description.trim(),
-        date: newEvent.date,
-        doctor: newEvent.doctor.trim() || "",
-        medications: newEvent.medications.trim() || "",
-        nextVisit: newEvent.nextVisit || null,
-        status: newEvent.status.trim() || "Completed",
-        remarks: newEvent.remarks.trim() || "",
-      };
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append("type", newEvent.type.trim());
+      formData.append("description", newEvent.description.trim());
+      formData.append("date", newEvent.date);
+      formData.append("doctor", newEvent.doctor.trim() || "");
+      formData.append("medications", newEvent.medications.trim() || "");
+      formData.append("nextVisit", newEvent.nextVisit || "");
+      formData.append("status", newEvent.status.trim() || "Completed");
+      formData.append("remarks", newEvent.remarks.trim() || "");
+
+      // Append files
+      selectedFiles.forEach(file => {
+        formData.append("documents", file);
+      });
+
+      console.log("Submitting with files:", selectedFiles.length);
 
       const response = await fetch(
         `/api/residents/${selectedResident._id}/care-events`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(eventData),
+          body: formData,
         }
       );
 
       const data = await response.json();
 
       if (data.success) {
-        // Show success message
         setAlert({
           show: true,
           type: "success",
-          message: "Care event added successfully!",
+          message: data.warning ? 
+            "Care event added but some documents failed to upload" : 
+            "Care event added successfully!",
         });
 
         // Reset form
@@ -177,11 +259,8 @@ const CareTracking = () => {
           status: "Completed",
           remarks: "",
         });
-
-        // Close modal
+        setSelectedFiles([]);
         setShowAddEventModal(false);
-
-        // Refresh the care events list
         fetchCareEvents(selectedResident._id);
       } else {
         throw new Error(data.message || "Failed to add event");
@@ -196,18 +275,16 @@ const CareTracking = () => {
     }
   };
 
-  // Handle view event
   const handleViewEvent = (event) => {
     setSelectedEvent(event);
     setShowViewEventModal(true);
   };
 
-  // Handle edit event
   const handleEditEvent = (event) => {
     console.log("Edit button clicked for event:", event);
 
     setEditEvent({
-      date: event.date.split("T")[0], // Convert to YYYY-MM-DD format
+      date: event.date.split("T")[0],
       type: event.type,
       description: event.description,
       doctor: event.doctor || "",
@@ -216,44 +293,46 @@ const CareTracking = () => {
       status: event.status || "",
       remarks: event.remarks || "",
     });
+    setEditSelectedFiles([]);
     setSelectedEvent(event);
     setShowEditEventModal(true);
   };
 
-  // Handle update event
+  // UPDATED: Handle update event with documents
   const handleUpdateEvent = async (e) => {
     e.preventDefault();
     try {
-      // Validate required fields
       if (!editEvent.date || !editEvent.type || !editEvent.description) {
         setAlert({
           show: true,
           type: "danger",
-          message:
-            "Please fill in Date, Event Type, and Description (required fields)",
+          message: "Please fill in Date, Event Type, and Description (required fields)",
         });
         return;
       }
 
-      const eventData = {
-        type: editEvent.type.trim(),
-        description: editEvent.description.trim(),
-        date: editEvent.date,
-        doctor: editEvent.doctor.trim() || "",
-        medications: editEvent.medications.trim() || "",
-        nextVisit: editEvent.nextVisit || null,
-        status: editEvent.status.trim() || "Completed",
-        remarks: editEvent.remarks.trim() || "",
-      };
+      const formData = new FormData();
+      formData.append("type", editEvent.type.trim());
+      formData.append("description", editEvent.description.trim());
+      formData.append("date", editEvent.date);
+      formData.append("doctor", editEvent.doctor.trim() || "");
+      formData.append("medications", editEvent.medications.trim() || "");
+      formData.append("nextVisit", editEvent.nextVisit || "");
+      formData.append("status", editEvent.status.trim() || "Completed");
+      formData.append("remarks", editEvent.remarks.trim() || "");
+
+      // Append new files
+      editSelectedFiles.forEach(file => {
+        formData.append("documents", file);
+      });
+
+      console.log("Updating with new files:", editSelectedFiles.length);
 
       const response = await fetch(
         `/api/residents/${selectedResident._id}/care-events/${selectedEvent._id}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(eventData),
+          body: formData,
         }
       );
 
@@ -266,6 +345,7 @@ const CareTracking = () => {
           message: "Care event updated successfully!",
         });
 
+        setEditSelectedFiles([]);
         setShowEditEventModal(false);
         fetchCareEvents(selectedResident._id);
       } else {
@@ -281,35 +361,24 @@ const CareTracking = () => {
     }
   };
 
-  // Handle delete event
   const handleDeleteEvent = async (eventId) => {
     console.log("Delete button clicked for event:", eventId);
 
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this care event? This action cannot be undone."
-      )
-    ) {
+    if (!window.confirm(
+      "Are you sure you want to delete this care event? This will also delete all associated documents. This action cannot be undone."
+    )) {
       return;
     }
 
     try {
-      console.log(
-        "Deleting care event:",
-        eventId,
-        "for resident:",
-        selectedResident._id
-      );
+      console.log("Deleting care event:", eventId, "for resident:", selectedResident._id);
 
       const response = await fetch(
         `/api/residents/${selectedResident._id}/care-events/${eventId}`,
-        {
-          method: "DELETE",
-        }
+        { method: "DELETE" }
       );
 
       console.log("Delete response status:", response.status);
-      console.log("Delete response ok:", response.ok);
 
       const data = await response.json();
       console.log("Delete response data:", data);
@@ -320,7 +389,6 @@ const CareTracking = () => {
           type: "success",
           message: "Care event deleted successfully!",
         });
-
         fetchCareEvents(selectedResident._id);
       } else {
         throw new Error(data.message || "Failed to delete event");
@@ -335,7 +403,6 @@ const CareTracking = () => {
     }
   };
 
-  // Add this useEffect to auto-hide alerts after 5 seconds
   useEffect(() => {
     if (alert.show) {
       const timer = setTimeout(() => {
@@ -345,7 +412,6 @@ const CareTracking = () => {
     }
   }, [alert.show]);
 
-  // Keyboard shortcut for search (Ctrl/Cmd + K)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
@@ -356,20 +422,16 @@ const CareTracking = () => {
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []); // Filter residents based on search and filter criteria
+  }, []);
+
   const filteredResidents = residents.filter((resident) => {
     const matchesSearch =
       !searchTerm ||
-      (resident.name &&
-        resident.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (resident.name && resident.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (resident.nameGivenByOrganization &&
-        resident.nameGivenByOrganization
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())) ||
+        resident.nameGivenByOrganization.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (resident.registrationNo &&
-        resident.registrationNo
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()));
+        resident.registrationNo.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesGender = !filterGender || resident.gender === filterGender;
 
@@ -382,7 +444,6 @@ const CareTracking = () => {
     return matchesSearch && matchesGender && matchesAge;
   });
 
-  // Clear all filters
   const clearFilters = () => {
     setSearchTerm("");
     setFilterGender("");
@@ -398,24 +459,34 @@ const CareTracking = () => {
     return name[0].toUpperCase();
   };
 
+  // NEW: Format file size
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  // NEW: Get file icon based on type
+  const getFileIcon = (mimeType) => {
+    if (mimeType.startsWith('image/')) return 'fa-file-image';
+    if (mimeType === 'application/pdf') return 'fa-file-pdf';
+    if (mimeType.includes('word')) return 'fa-file-word';
+    return 'fa-file';
+  };
+
   if (loading) return <div className="loading-spinner h-screen flex justify-center items-center">Loading...</div>;
-  // if (error) return <div className="error-message">{error}</div>;
 
   return (
     <div className="care-tracking-container mt-5">
-      {/* <div className="h-screen">ww</div> */}
       <div className="header-section">
         <h1>Care Tracking Timeline</h1>
-        <p>
-          Monitor and manage resident care activities with clarity and
-          precision.
-        </p>
+        <p>Monitor and manage resident care activities with clarity and precision.</p>
       </div>
+
       {alert.show && (
-        <div
-          className={`alert alert-${alert.type} alert-dismissible fade show`}
-          role="alert"
-        >
+        <div className={`alert alert-${alert.type} alert-dismissible fade show`} role="alert">
           {alert.message}
           <button
             type="button"
@@ -424,6 +495,7 @@ const CareTracking = () => {
           ></button>
         </div>
       )}
+
       <Row className="mt-4">
         <Col md={4}>
           <Card className="residents-list-card">
@@ -579,14 +651,11 @@ const CareTracking = () => {
                           <Card.Header>
                             <div className="event-meta">
                               <div className="event-date">
-                                {new Date(event.date).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                  }
-                                )}
+                                {new Date(event.date).toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })}
                               </div>
                               <div className="event-type">
                                 {event.type.replace(/_/g, " ")}
@@ -620,9 +689,7 @@ const CareTracking = () => {
                             </div>
                           </Card.Header>
                           <Card.Body>
-                            <p className="event-description">
-                              {event.description}
-                            </p>
+                            <p className="event-description">{event.description}</p>
                             <div className="event-details-grid">
                               {event.doctor && (
                                 <p>
@@ -648,12 +715,44 @@ const CareTracking = () => {
                                     <i className="fas fa-calendar-check me-2 text-muted"></i>
                                     Next Visit:
                                   </strong>{" "}
-                                  {new Date(
-                                    event.nextVisit
-                                  ).toLocaleDateString()}
+                                  {new Date(event.nextVisit).toLocaleDateString()}
                                 </p>
                               )}
                             </div>
+
+                            {/* NEW: Display documents */}
+                            {event.documents && event.documents.length > 0 && (
+                              <div className="mt-3">
+                                <strong>
+                                  <i className="fas fa-paperclip me-2"></i>
+                                  Attachments ({event.documents.length}):
+                                </strong>
+                                <div className="mt-2">
+                                  {event.documents.map((doc, index) => (
+                                    <div key={index} className="d-flex align-items-center justify-content-between bg-light p-2 rounded mb-2">
+                                      <div className="d-flex align-items-center">
+                                        <i className={`fas ${getFileIcon(doc.fileType)} text-primary me-2`}></i>
+                                        <div>
+                                          <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                                            {doc.fileName}
+                                          </a>
+                                          <small className="text-muted d-block">{formatFileSize(doc.fileSize)}</small>
+                                        </div>
+                                      </div>
+                                      <Button
+                                        variant="outline-danger"
+                                        size="sm"
+                                        onClick={() => handleDeleteDocument(event._id, index)}
+                                        title="Delete document"
+                                      >
+                                        <i className="fas fa-trash"></i>
+                                      </Button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
                             <div className="d-flex justify-content-between align-items-center mt-3">
                               <div
                                 className={`status-badge status-${event.status
@@ -663,8 +762,7 @@ const CareTracking = () => {
                                 {event.status}
                               </div>
                               <small className="text-muted fst-italic">
-                                Added on:{" "}
-                                {new Date(event.createdAt).toLocaleString()}
+                                Added on: {new Date(event.createdAt).toLocaleString()}
                               </small>
                             </div>
                           </Card.Body>
@@ -687,20 +785,15 @@ const CareTracking = () => {
               <i className="fas fa-mouse-pointer fa-3x mb-3"></i>
               <h3>Select a resident to view their care timeline</h3>
               <p className="text-muted">
-                Choose a resident from the list on the left to see their
-                details.
+                Choose a resident from the list on the left to see their details.
               </p>
             </div>
           )}
         </Col>
       </Row>
-      {/* ... (All your Modals JSX can remain the same) ... */}
+
       {/* Add Event Modal */}
-      <Modal
-        show={showAddEventModal}
-        onHide={() => setShowAddEventModal(false)}
-        size="lg"
-      >
+      <Modal show={showAddEventModal} onHide={() => setShowAddEventModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
             <i className="fas fa-calendar-plus me-2"></i>Add Care Event
@@ -720,9 +813,7 @@ const CareTracking = () => {
                     value={newEvent.date}
                     max="2030-12-31"
                     min="2020-01-01"
-                    onChange={(e) =>
-                      setNewEvent({ ...newEvent, date: e.target.value })
-                    }
+                    onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
                   />
                 </Form.Group>
               </Col>
@@ -737,9 +828,7 @@ const CareTracking = () => {
                     placeholder="e.g., Doctor Visit, Therapy"
                     value={newEvent.type}
                     maxLength="200"
-                    onChange={(e) =>
-                      setNewEvent({ ...newEvent, type: e.target.value })
-                    }
+                    onChange={(e) => setNewEvent({ ...newEvent, type: e.target.value })}
                   />
                 </Form.Group>
               </Col>
@@ -756,9 +845,7 @@ const CareTracking = () => {
                 placeholder="Describe the care event, treatments provided, observations, etc."
                 value={newEvent.description}
                 maxLength="1000"
-                onChange={(e) =>
-                  setNewEvent({ ...newEvent, description: e.target.value })
-                }
+                onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
               />
               <Form.Text className="text-muted d-block text-end">
                 {newEvent.description.length}/1000
@@ -774,9 +861,7 @@ const CareTracking = () => {
                     placeholder="e.g., Dr. Smith"
                     value={newEvent.doctor}
                     maxLength="200"
-                    onChange={(e) =>
-                      setNewEvent({ ...newEvent, doctor: e.target.value })
-                    }
+                    onChange={(e) => setNewEvent({ ...newEvent, doctor: e.target.value })}
                   />
                 </Form.Group>
               </Col>
@@ -788,9 +873,7 @@ const CareTracking = () => {
                     value={newEvent.nextVisit}
                     min={new Date().toISOString().split("T")[0]}
                     max="2030-12-31"
-                    onChange={(e) =>
-                      setNewEvent({ ...newEvent, nextVisit: e.target.value })
-                    }
+                    onChange={(e) => setNewEvent({ ...newEvent, nextVisit: e.target.value })} 
                   />
                 </Form.Group>
               </Col>
@@ -804,9 +887,7 @@ const CareTracking = () => {
                 placeholder="e.g., Paracetamol 500mg, Physiotherapy session"
                 value={newEvent.medications}
                 maxLength="500"
-                onChange={(e) =>
-                  setNewEvent({ ...newEvent, medications: e.target.value })
-                }
+                onChange={(e) => setNewEvent({ ...newEvent, medications: e.target.value })}
               />
             </Form.Group>
 
@@ -836,18 +917,64 @@ const CareTracking = () => {
                 as="textarea"
                 rows={2}
                 value={newEvent.remarks}
-                onChange={(e) =>
-                  setNewEvent({ ...newEvent, remarks: e.target.value })
-                }
+                onChange={(e) => setNewEvent({ ...newEvent, remarks: e.target.value })}
                 placeholder="Additional notes, observations, or remarks..."
                 maxLength="500"
               />
             </Form.Group>
 
+            {/* NEW: Document Upload Section */}
+            <Form.Group className="mb-3">
+              <Form.Label>
+                <i className="fas fa-paperclip me-2"></i>
+                Attach Documents (Optional)
+              </Form.Label>
+              <Form.Control
+                type="file"
+                multiple
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                onChange={handleFileSelect}
+              />
+              <Form.Text className="text-muted">
+                You can upload medical reports, prescriptions, test results, etc. (Max 10MB per file, up to 5 files)
+              </Form.Text>
+            </Form.Group>
+
+            {/* Display selected files */}
+            {selectedFiles.length > 0 && (
+              <div className="mb-3">
+                <strong>Selected Files ({selectedFiles.length}):</strong>
+                <div className="mt-2">
+                  {selectedFiles.map((file, index) => (
+                    <div key={index} className="d-flex align-items-center justify-content-between bg-light p-2 rounded mb-2">
+                      <div className="d-flex align-items-center">
+                        <i className={`fas ${getFileIcon(file.type)} text-primary me-2`}></i>
+                        <div>
+                          <div>{file.name}</div>
+                          <small className="text-muted">{formatFileSize(file.size)}</small>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => removeSelectedFile(index)}
+                        type="button"
+                      >
+                        <i className="fas fa-times"></i>
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="d-flex justify-content-end">
               <Button
                 variant="secondary"
-                onClick={() => setShowAddEventModal(false)}
+                onClick={() => {
+                  setShowAddEventModal(false);
+                  setSelectedFiles([]);
+                }}
                 className="me-2"
               >
                 Cancel
@@ -859,12 +986,9 @@ const CareTracking = () => {
           </Form>
         </Modal.Body>
       </Modal>
+
       {/* View Event Modal */}
-      <Modal
-        show={showViewEventModal}
-        onHide={() => setShowViewEventModal(false)}
-        size="lg"
-      >
+      <Modal show={showViewEventModal} onHide={() => setShowViewEventModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
             <i className="fas fa-file-alt me-2"></i>Care Event Details
@@ -935,14 +1059,48 @@ const CareTracking = () => {
                   <p>{selectedEvent.remarks}</p>
                 </div>
               )}
+
+              {/* NEW: Display documents in view modal */}
+              {selectedEvent.documents && selectedEvent.documents.length > 0 && (
+                <div className="detail-section">
+                  <h6>
+                    <i className="fas fa-paperclip me-2"></i>Attached Documents ({selectedEvent.documents.length})
+                  </h6>
+                  <div className="mt-2">
+                    {selectedEvent.documents.map((doc, index) => (
+                      <div key={index} className="d-flex align-items-center justify-content-between bg-light p-2 rounded mb-2">
+                        <div className="d-flex align-items-center">
+                          <i className={`fas ${getFileIcon(doc.fileType)} text-primary me-2`}></i>
+                          <div>
+                            <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                              {doc.fileName}
+                            </a>
+                            <small className="text-muted d-block">{formatFileSize(doc.fileSize)}</small>
+                            <small className="text-muted d-block">
+                              Uploaded: {new Date(doc.uploadedAt).toLocaleString()}
+                            </small>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          onClick={() => handleDeleteDocument(selectedEvent._id, index)}
+                          title="Delete document"
+                        >
+                          <i className="fas fa-trash"></i>
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </Modal.Body>
         <Modal.Footer className="d-flex justify-content-between">
           <small className="text-muted">
             Created on{" "}
-            {selectedEvent &&
-              new Date(selectedEvent.createdAt).toLocaleString()}
+            {selectedEvent && new Date(selectedEvent.createdAt).toLocaleString()}
           </small>
           <div>
             <Button
@@ -964,12 +1122,9 @@ const CareTracking = () => {
           </div>
         </Modal.Footer>
       </Modal>
-      {/* Edit Event Modal (Structure remains same, but will adopt new CSS) */}
-      <Modal
-        show={showEditEventModal}
-        onHide={() => setShowEditEventModal(false)}
-        size="lg"
-      >
+
+      {/* Edit Event Modal */}
+      <Modal show={showEditEventModal} onHide={() => setShowEditEventModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
             <i className="fas fa-edit me-2"></i>Edit Care Event
@@ -977,7 +1132,6 @@ const CareTracking = () => {
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleUpdateEvent}>
-            {/* Form content is identical to Add Modal, just uses editEvent state */}
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
@@ -988,9 +1142,7 @@ const CareTracking = () => {
                     type="date"
                     required
                     value={editEvent.date}
-                    onChange={(e) =>
-                      setEditEvent({ ...editEvent, date: e.target.value })
-                    }
+                    onChange={(e) => setEditEvent({ ...editEvent, date: e.target.value })}
                   />
                 </Form.Group>
               </Col>
@@ -1003,9 +1155,7 @@ const CareTracking = () => {
                     type="text"
                     required
                     value={editEvent.type}
-                    onChange={(e) =>
-                      setEditEvent({ ...editEvent, type: e.target.value })
-                    }
+                    onChange={(e) => setEditEvent({ ...editEvent, type: e.target.value })}
                   />
                 </Form.Group>
               </Col>
@@ -1019,9 +1169,7 @@ const CareTracking = () => {
                 rows={3}
                 required
                 value={editEvent.description}
-                onChange={(e) =>
-                  setEditEvent({ ...editEvent, description: e.target.value })
-                }
+                onChange={(e) => setEditEvent({ ...editEvent, description: e.target.value })}
               />
             </Form.Group>
             <Row>
@@ -1031,9 +1179,7 @@ const CareTracking = () => {
                   <Form.Control
                     type="text"
                     value={editEvent.doctor}
-                    onChange={(e) =>
-                      setEditEvent({ ...editEvent, doctor: e.target.value })
-                    }
+                    onChange={(e) => setEditEvent({ ...editEvent, doctor: e.target.value })}
                   />
                 </Form.Group>
               </Col>
@@ -1043,9 +1189,7 @@ const CareTracking = () => {
                   <Form.Control
                     type="date"
                     value={editEvent.nextVisit}
-                    onChange={(e) =>
-                      setEditEvent({ ...editEvent, nextVisit: e.target.value })
-                    }
+                    onChange={(e) => setEditEvent({ ...editEvent, nextVisit: e.target.value })}
                   />
                 </Form.Group>
               </Col>
@@ -1056,9 +1200,7 @@ const CareTracking = () => {
                 as="textarea"
                 rows={2}
                 value={editEvent.medications}
-                onChange={(e) =>
-                  setEditEvent({ ...editEvent, medications: e.target.value })
-                }
+                onChange={(e) => setEditEvent({ ...editEvent, medications: e.target.value })}
               />
             </Form.Group>
             <Row>
@@ -1067,9 +1209,7 @@ const CareTracking = () => {
                   <Form.Label>Status *</Form.Label>
                   <Form.Select
                     value={editEvent.status}
-                    onChange={(e) =>
-                      setEditEvent({ ...editEvent, status: e.target.value })
-                    }
+                    onChange={(e) => setEditEvent({ ...editEvent, status: e.target.value })}
                     required
                   >
                     <option value="Completed">Completed</option>
@@ -1087,16 +1227,92 @@ const CareTracking = () => {
                 as="textarea"
                 rows={2}
                 value={editEvent.remarks}
-                onChange={(e) =>
-                  setEditEvent({ ...editEvent, remarks: e.target.value })
-                }
+                onChange={(e) => setEditEvent({ ...editEvent, remarks: e.target.value })}
               />
             </Form.Group>
+
+            {/* NEW: Display existing documents */}
+            {selectedEvent && selectedEvent.documents && selectedEvent.documents.length > 0 && (
+              <div className="mb-3">
+                <strong>Existing Documents ({selectedEvent.documents.length}):</strong>
+                <div className="mt-2">
+                  {selectedEvent.documents.map((doc, index) => (
+                    <div key={index} className="d-flex align-items-center justify-content-between bg-light p-2 rounded mb-2">
+                      <div className="d-flex align-items-center">
+                        <i className={`fas ${getFileIcon(doc.fileType)} text-primary me-2`}></i>
+                        <div>
+                          <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                            {doc.fileName}
+                          </a>
+                          <small className="text-muted d-block">{formatFileSize(doc.fileSize)}</small>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => handleDeleteDocument(selectedEvent._id, index)}
+                        type="button"
+                      >
+                        <i className="fas fa-trash"></i>
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* NEW: Add new documents section */}
+            <Form.Group className="mb-3">
+              <Form.Label>
+                <i className="fas fa-paperclip me-2"></i>
+                Add More Documents (Optional)
+              </Form.Label>
+              <Form.Control
+                type="file"
+                multiple
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                onChange={handleEditFileSelect}
+              />
+              <Form.Text className="text-muted">
+                Upload additional documents (Max 10MB per file, up to 5 files)
+              </Form.Text>
+            </Form.Group>
+
+            {/* Display newly selected files */}
+            {editSelectedFiles.length > 0 && (
+              <div className="mb-3">
+                <strong>New Files to Upload ({editSelectedFiles.length}):</strong>
+                <div className="mt-2">
+                  {editSelectedFiles.map((file, index) => (
+                    <div key={index} className="d-flex align-items-center justify-content-between bg-light p-2 rounded mb-2">
+                      <div className="d-flex align-items-center">
+                        <i className={`fas ${getFileIcon(file.type)} text-primary me-2`}></i>
+                        <div>
+                          <div>{file.name}</div>
+                          <small className="text-muted">{formatFileSize(file.size)}</small>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => removeEditSelectedFile(index)}
+                        type="button"
+                      >
+                        <i className="fas fa-times"></i>
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="d-flex justify-content-end">
               <Button
                 variant="secondary"
-                onClick={() => setShowEditEventModal(false)}
+                onClick={() => {
+                  setShowEditEventModal(false);
+                  setEditSelectedFiles([]);
+                }}
                 className="me-2"
               >
                 Cancel
@@ -1113,4 +1329,3 @@ const CareTracking = () => {
 };
 
 export default CareTracking;
-

@@ -3385,7 +3385,65 @@ router.get("/:id/print", async (req, res) => {
   }
 });
 
-// ==================== CARE EVENTS ENDPOINTS ====================
+// ==================== UPDATED CARE EVENTS ENDPOINTS ====================
+
+// Configure multer for care event documents
+const careEventUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/jpg",
+      "image/gif",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only images, PDF, DOC, DOCX files are allowed!"), false);
+    }
+  },
+});
+
+// Helper function to upload care event document to Firebase
+const uploadCareEventDocument = async (file, residentId, eventId) => {
+  try {
+    const fileName = `care-events/${residentId}/${eventId}/${Date.now()}_${file.originalname}`;
+    const fileUpload = bucket.file(fileName);
+
+    await fileUpload.save(file.buffer, {
+      metadata: {
+        contentType: file.mimetype,
+        metadata: {
+          residentId: residentId,
+          eventId: eventId,
+          uploadedAt: new Date().toISOString()
+        }
+      },
+    });
+
+    const [downloadUrl] = await fileUpload.getSignedUrl({
+      action: "read",
+      expires: "03-09-2491",
+    });
+
+    console.log(`Care event document uploaded:`, { fileName, downloadUrl });
+    return {
+      fileName: file.originalname,
+      fileUrl: downloadUrl,
+      fileType: file.mimetype,
+      fileSize: file.size,
+      uploadedAt: new Date()
+    };
+  } catch (error) {
+    console.error(`Error uploading care event document:`, error);
+    throw error;
+  }
+};
 
 // GET: Fetch care events for a specific resident
 router.get("/:id/care-events", async (req, res) => {
@@ -3427,23 +3485,16 @@ router.get("/:id/care-events", async (req, res) => {
   }
 });
 
-// POST: Add a new care event for a specific resident
-router.post("/:id/care-events", async (req, res) => {
+// POST: Add a new care event with documents
+router.post("/:id/care-events", careEventUpload.array('documents', 5), async (req, res) => {
   try {
     const { id } = req.params;
-    const { type, description, date, doctor, medications, nextVisit, status } =
-      req.body;
+    const { type, description, date, doctor, medications, nextVisit, status, remarks } = req.body;
 
     console.log("POST care-events request received:", {
       residentId: id,
       body: req.body,
-      type,
-      description,
-      date,
-      doctor,
-      medications,
-      nextVisit,
-      status,
+      filesCount: req.files ? req.files.length : 0
     });
 
     if (!isValidObjectId(id)) {
@@ -3472,12 +3523,9 @@ router.post("/:id/care-events", async (req, res) => {
       });
     }
 
-    console.log(
-      "Found resident:",
-      resident.name || resident.nameGivenByOrganization
-    );
+    console.log("Found resident:", resident.name || resident.nameGivenByOrganization);
 
-    // Create new care event with proper data sanitization
+    // Create new care event
     const newCareEvent = {
       type: String(type).trim(),
       description: String(description).trim(),
@@ -3486,32 +3534,54 @@ router.post("/:id/care-events", async (req, res) => {
       medications: medications ? String(medications).trim() : "",
       nextVisit: nextVisit ? new Date(nextVisit) : null,
       status: status ? String(status).trim() : "Completed",
+      remarks: remarks ? String(remarks).trim() : "",
+      documents: [],
       createdAt: new Date(),
-      createdBy: "Admin", // You can modify this to use actual user info
+      createdBy: "Admin",
     };
 
-    console.log("Creating care event:", newCareEvent);
-
-    // Add to resident's care events array
+    // Initialize care events array if needed
     if (!resident.careEvents) {
       resident.careEvents = [];
     }
+
+    // Add the event to get its _id
     resident.careEvents.push(newCareEvent);
-
-    console.log(
-      "About to save resident with care events count:",
-      resident.careEvents.length
-    );
-
-    // Save the resident
     await resident.save();
 
-    console.log("Resident saved successfully");
-
-    // Get the newly added event (with its generated _id)
+    // Get the newly added event with its _id
     const addedEvent = resident.careEvents[resident.careEvents.length - 1];
+    console.log("Care event added with ID:", addedEvent._id);
 
-    console.log("Returning added event:", addedEvent);
+    // Upload documents if any
+    if (req.files && req.files.length > 0) {
+      console.log(`Uploading ${req.files.length} documents for care event`);
+      
+      const documentPromises = req.files.map(file => 
+        uploadCareEventDocument(file, id, addedEvent._id)
+      );
+
+      try {
+        const uploadedDocs = await Promise.all(documentPromises);
+        
+        // Update the event with document info
+        addedEvent.documents = uploadedDocs;
+        await resident.save();
+        
+        console.log(`Successfully uploaded ${uploadedDocs.length} documents`);
+      } catch (uploadError) {
+        console.error("Error uploading documents:", uploadError);
+        // Event is still created, just without documents
+        return res.status(201).json({
+          success: true,
+          message: "Care event added but some documents failed to upload",
+          data: addedEvent,
+          warning: "Document upload failed"
+        });
+      }
+    }
+
+    console.log("Care event created successfully with documents");
 
     res.status(201).json({
       success: true,
@@ -3529,17 +3599,17 @@ router.post("/:id/care-events", async (req, res) => {
   }
 });
 
-// PUT: Update a specific care event
-router.put("/:id/care-events/:eventId", async (req, res) => {
+// PUT: Update a specific care event with documents
+router.put("/:id/care-events/:eventId", careEventUpload.array('documents', 5), async (req, res) => {
   try {
     const { id, eventId } = req.params;
-    const { type, description, date, doctor, medications, nextVisit, status } =
-      req.body;
+    const { type, description, date, doctor, medications, nextVisit, status, remarks } = req.body;
 
     console.log("PUT care event request:", {
       residentId: id,
       eventId,
       body: req.body,
+      filesCount: req.files ? req.files.length : 0
     });
 
     if (!isValidObjectId(id) || !isValidObjectId(eventId)) {
@@ -3559,12 +3629,6 @@ router.put("/:id/care-events/:eventId", async (req, res) => {
       });
     }
 
-    console.log(
-      "Found resident:",
-      resident.name || resident.nameGivenByOrganization
-    );
-
-    // Find the care event to update using findIndex
     const careEventIndex = resident.careEvents.findIndex(
       (event) => event._id.toString() === eventId
     );
@@ -3577,28 +3641,40 @@ router.put("/:id/care-events/:eventId", async (req, res) => {
       });
     }
 
-    console.log("Found care event at index:", careEventIndex);
     const careEvent = resident.careEvents[careEventIndex];
 
-    // Update the care event with proper data sanitization
+    // Update fields
     if (type) careEvent.type = String(type).trim();
     if (description) careEvent.description = String(description).trim();
     if (date) careEvent.date = new Date(date);
     if (doctor !== undefined) careEvent.doctor = String(doctor).trim();
-    if (medications !== undefined)
-      careEvent.medications = String(medications).trim();
+    if (medications !== undefined) careEvent.medications = String(medications).trim();
     if (nextVisit) careEvent.nextVisit = new Date(nextVisit);
     if (status) careEvent.status = String(status).trim();
+    if (remarks !== undefined) careEvent.remarks = String(remarks).trim();
 
-    console.log("Updated care event data:", {
-      type: careEvent.type,
-      description: careEvent.description,
-      date: careEvent.date,
-      doctor: careEvent.doctor,
-      medications: careEvent.medications,
-      nextVisit: careEvent.nextVisit,
-      status: careEvent.status,
-    });
+    // Upload new documents if any
+    if (req.files && req.files.length > 0) {
+      console.log(`Uploading ${req.files.length} new documents for care event`);
+      
+      const documentPromises = req.files.map(file => 
+        uploadCareEventDocument(file, id, eventId)
+      );
+
+      try {
+        const uploadedDocs = await Promise.all(documentPromises);
+        
+        // Append new documents to existing ones
+        if (!careEvent.documents) {
+          careEvent.documents = [];
+        }
+        careEvent.documents.push(...uploadedDocs);
+        
+        console.log(`Successfully uploaded ${uploadedDocs.length} new documents`);
+      } catch (uploadError) {
+        console.error("Error uploading documents:", uploadError);
+      }
+    }
 
     await resident.save();
     console.log("Care event updated successfully");
@@ -3610,10 +3686,77 @@ router.put("/:id/care-events/:eventId", async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating care event:", error);
-    console.error("Error stack:", error.stack);
     res.status(500).json({
       success: false,
       message: "Failed to update care event",
+      error: error.message,
+    });
+  }
+});
+
+// DELETE: Remove a document from a care event
+router.delete("/:id/care-events/:eventId/documents/:docIndex", async (req, res) => {
+  try {
+    const { id, eventId, docIndex } = req.params;
+
+    console.log("DELETE care event document:", { residentId: id, eventId, docIndex });
+
+    if (!isValidObjectId(id) || !isValidObjectId(eventId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ID format",
+      });
+    }
+
+    const resident = await Resident.findById(id);
+    if (!resident) {
+      return res.status(404).json({
+        success: false,
+        message: "Resident not found",
+      });
+    }
+
+    const careEvent = resident.careEvents.id(eventId);
+    if (!careEvent) {
+      return res.status(404).json({
+        success: false,
+        message: "Care event not found",
+      });
+    }
+
+    const index = parseInt(docIndex);
+    if (isNaN(index) || index < 0 || index >= careEvent.documents.length) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid document index",
+      });
+    }
+
+    const document = careEvent.documents[index];
+    
+    // Delete from Firebase
+    try {
+      const fileName = decodeURIComponent(document.fileUrl.split("/o/")[1].split("?")[0]);
+      await bucket.file(fileName).delete();
+      console.log("Document deleted from Firebase:", fileName);
+    } catch (firebaseError) {
+      console.error("Error deleting from Firebase:", firebaseError);
+      // Continue with deletion from database even if Firebase delete fails
+    }
+
+    // Remove from array
+    careEvent.documents.splice(index, 1);
+    await resident.save();
+
+    res.json({
+      success: true,
+      message: "Document deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting document:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete document",
       error: error.message,
     });
   }
@@ -3643,16 +3786,6 @@ router.delete("/:id/care-events/:eventId", async (req, res) => {
       });
     }
 
-    console.log(
-      "Found resident:",
-      resident.name || resident.nameGivenByOrganization
-    );
-    console.log(
-      "Care events count before deletion:",
-      resident.careEvents.length
-    );
-
-    // Find the care event index
     const careEventIndex = resident.careEvents.findIndex(
       (event) => event._id.toString() === eventId
     );
@@ -3665,18 +3798,30 @@ router.delete("/:id/care-events/:eventId", async (req, res) => {
       });
     }
 
-    console.log("Found care event at index:", careEventIndex);
+    const careEvent = resident.careEvents[careEventIndex];
 
-    // Remove the care event using splice
-    const removedEvent = resident.careEvents.splice(careEventIndex, 1)[0];
-    console.log("Removed event:", removedEvent.type, removedEvent.description);
+    // Delete all associated documents from Firebase
+    if (careEvent.documents && careEvent.documents.length > 0) {
+      console.log(`Deleting ${careEvent.documents.length} documents from Firebase`);
+      
+      const deletePromises = careEvent.documents.map(async (doc) => {
+        try {
+          const fileName = decodeURIComponent(doc.fileUrl.split("/o/")[1].split("?")[0]);
+          await bucket.file(fileName).delete();
+          console.log("Document deleted:", fileName);
+        } catch (error) {
+          console.error("Error deleting document:", error);
+        }
+      });
 
+      await Promise.all(deletePromises);
+    }
+
+    // Remove the care event
+    resident.careEvents.splice(careEventIndex, 1);
     await resident.save();
 
-    console.log(
-      "Care events count after deletion:",
-      resident.careEvents.length
-    );
+    console.log("Care event and documents deleted successfully");
 
     res.json({
       success: true,
@@ -3684,7 +3829,6 @@ router.delete("/:id/care-events/:eventId", async (req, res) => {
     });
   } catch (error) {
     console.error("Error deleting care event:", error);
-    console.error("Error stack:", error.stack);
     res.status(500).json({
       success: false,
       message: "Failed to delete care event",

@@ -463,58 +463,81 @@ const residentSchema = new mongoose.Schema({
     default: true
   },
 
-  // Care tracking events
-  careEvents: [{
-    type: {
+// Care tracking events with document support
+careEvents: [{
+  type: {
+    type: String,
+    required: true,
+    trim: true,
+    default: 'General Care'
+  },
+  description: {
+    type: String,
+    required: true,
+    trim: true,
+    minlength: 1,
+    maxlength: 1000
+  },
+  date: {
+    type: Date,
+    required: true
+  },
+  doctor: {
+    type: String,
+    trim: true,
+    maxlength: 200
+  },
+  medications: {
+    type: String,
+    trim: true,
+    maxlength: 500
+  },
+  nextVisit: {
+    type: Date
+  },
+  status: {
+    type: String,
+    trim: true,
+    default: 'Completed',
+    maxlength: 100
+  },
+  remarks: {
+    type: String,
+    trim: true,
+    maxlength: 500
+  },
+  // NEW: Document support for care events
+  documents: [{
+    fileName: {
       type: String,
-      required: true,
-      trim: true,
-      default: 'General Care'
-    },
-    description: {
-      type: String,
-      required: true,
-      trim: true,
-      minlength: 1,
-      maxlength: 1000
-    },
-    date: {
-      type: Date,
       required: true
     },
-    doctor: {
+    fileUrl: {
       type: String,
-      trim: true,
-      maxlength: 200
+      required: true
     },
-    medications: {
+    fileType: {
       type: String,
-      trim: true,
-      maxlength: 500
+      required: true
     },
-    nextVisit: {
-      type: Date
+    fileSize: {
+      type: Number,
+      required: true
     },
-    status: {
-      type: String,
-      trim: true,
-      default: 'Completed',
-      maxlength: 100
-    },
-    remarks: {
-      type: String,
-      trim: true,
-      maxlength: 500
-    },
-    createdAt: {
+    uploadedAt: {
       type: Date,
       default: Date.now
-    },
-    createdBy: {
-      type: String,
-      trim: true
     }
-  }]
+  }],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  createdBy: {
+    type: String,
+    trim: true
+  }
+}]
 }, {
   timestamps: true
 });
