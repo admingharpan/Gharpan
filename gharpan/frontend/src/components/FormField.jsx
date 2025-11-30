@@ -86,7 +86,7 @@ const FormField = ({
     <div className="mb-3">
       <label htmlFor={name} className="form-label">
         {label}
-        <small className="text-success ms-2">(Optional)</small>
+        <small className="text-success ms-2"></small>
       </label>
       
       {renderInput()}
