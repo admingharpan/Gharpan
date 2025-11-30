@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, User, Lock, Leaf, Heart, Users } from "lucide-react";
-import { useToast, ToastContainer } from "./ToastNotification";
 
 function Login({ onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -9,7 +8,7 @@ function Login({ onLoginSuccess }) {
     password: "",
   });
   const [error, setError] = useState("");
-  const { toasts, showSuccess, removeToast } = useToast();
+  const [toasts, setToasts] = useState([]);
 
   const validAdmins = {
     SuperAdmin: { password: "Gharpan", role: "superadmin" },
@@ -28,7 +27,7 @@ function Login({ onLoginSuccess }) {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setError("");
 
     if (!formData.adminId.trim()) {
@@ -55,16 +54,20 @@ function Login({ onLoginSuccess }) {
 
     console.log("Form submitted:", formData);
 
-    // Save login token and role
-    localStorage.setItem("token", "true");
-    localStorage.setItem("userRole", admin.role);
+    // Show success message
+    const toastId = Date.now();
+    setToasts([{ id: toastId, message: "Login successful! Redirecting to dashboard...", type: "success" }]);
 
     setTimeout(() => {
-      showSuccess("Login successful! Redirecting to dashboard...");
-      setTimeout(() => {
-        onLoginSuccess && onLoginSuccess();
-      }, 1000);
-    }, 300);
+      setToasts([]);
+      onLoginSuccess && onLoginSuccess();
+    }, 1000);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleSubmit();
+    }
   };
 
   return (
@@ -197,7 +200,7 @@ function Login({ onLoginSuccess }) {
                 className="text-3xl font-bold mb-2"
                 style={{ color: "#000000" }}
               >
-                Welcome Back
+                Welcome
               </h2>
               <p className="text-gray-600">
                 Access your admin dashboard
@@ -227,6 +230,7 @@ function Login({ onLoginSuccess }) {
                     name="adminId"
                     value={formData.adminId}
                     onChange={handleInputChange}
+                    onKeyPress={handleKeyPress}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg outline-none transition-all"
                     style={{
                       backgroundColor: "#FEFCF2",
@@ -252,6 +256,7 @@ function Login({ onLoginSuccess }) {
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
+                    onKeyPress={handleKeyPress}
                     className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg outline-none transition-all"
                     style={{
                       backgroundColor: "#FEFCF2",
@@ -295,7 +300,20 @@ function Login({ onLoginSuccess }) {
           </div>
         </div>
       </div>
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
+
+      {/* Toast Notifications */}
+      {toasts.length > 0 && (
+        <div className="fixed top-4 right-4 z-50">
+          {toasts.map((toast) => (
+            <div
+              key={toast.id}
+              className="mb-3 p-4 rounded-lg bg-green-100 border border-green-300 shadow-lg"
+            >
+              <p className="text-green-700 text-sm">{toast.message}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

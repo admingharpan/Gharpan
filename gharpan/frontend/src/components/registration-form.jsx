@@ -1964,7 +1964,7 @@ function RegistrationForm() {
                     }}
                   >
                     📄 Upload Documents{" "}
-                    <span className="badge bg-secondary ms-2">Optional</span>
+                    <span className="badge bg-secondary ms-2"></span>
                   </h5>
                   <div className="alert alert-info mb-4" role="alert">
                     <div className="d-flex align-items-start">
@@ -2077,7 +2077,6 @@ function RegistrationForm() {
                               <input
                                 type="text"
                                 className="form-control form-control-sm"
-                                placeholder="Description (optional)"
                                 value={doc.description}
                                 onChange={(e) =>
                                   updateDocumentDetails(
