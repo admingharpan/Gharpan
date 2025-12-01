@@ -168,7 +168,7 @@ const Dashboard = () => {
                   lineHeight: 1,
                 }}
               >
-                Gharpan Dashboard
+                Gharpan Foundation
               </h1>
               <p
                 className="lead"
