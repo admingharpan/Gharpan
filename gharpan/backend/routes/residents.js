@@ -1973,20 +1973,42 @@ router.get("/:id/preview", async (req, res) => {
     doc.pipe(res);
 
     const addField = (label, value, yPos, isMultiline = false) => {
+      const labelX = 60;
+      const valueX = 220;
+      const valueWidth = 320;
+      const lineGap = 12;
+
+      // Label
       doc
         .fontSize(10)
         .font("Helvetica-Bold")
         .fillColor("#2563eb")
-        .text(label + ":", 60, yPos, { width: 150 });
+        .text(label + ":", labelX, yPos, { width: 150 });
+
+      // Value
       doc.font("Helvetica").fillColor("#374151");
-      if (isMultiline && value && value.length > 50) {
-        doc.text(value || "N/A", 220, yPos, { width: 320, align: "left" });
-        return yPos + Math.ceil((value || "N/A").length / 55) * 12 + 8;
+
+      const textValue = value || "N/A";
+
+      if (isMultiline) {
+        // Measure wrapped height BEFORE rendering
+        const textHeight = doc.heightOfString(textValue, {
+          width: valueWidth,
+          align: "left",
+        });
+
+        doc.text(textValue, valueX, yPos, {
+          width: valueWidth,
+          align: "left",
+        });
+
+        return yPos + textHeight + lineGap;
       } else {
-        doc.text(value || "N/A", 220, yPos, { width: 320 });
+        doc.text(textValue, valueX, yPos, { width: valueWidth });
         return yPos + 16;
       }
     };
+
 
     const addSectionHeader = (title, yPos) => {
       doc
@@ -2443,7 +2465,7 @@ router.get("/:id/download", async (req, res) => {
         .fontSize(24)
         .font("Helvetica-Bold")
         .fillColor("#FFFFFF")
-        .text("Gharpan Organisation", 130, 20);
+        .text("Gharpan Foundation", 130, 20);
       doc
         .fontSize(11)
         .font("Helvetica")
