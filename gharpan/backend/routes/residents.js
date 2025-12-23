@@ -1958,7 +1958,7 @@ router.get("/:id/preview", async (req, res) => {
       size: "A4",
       info: {
         Title: `Resident Details - ${resident.registrationNo || resident._id}`,
-        Author: "Gharpan Organization",
+        Author: "Gharpan Foundation",
         Subject: "Resident Registration Details",
         Keywords: "resident, registration, details, gharpan",
       },
@@ -2015,7 +2015,7 @@ router.get("/:id/preview", async (req, res) => {
       .fontSize(20)
       .font("Helvetica-Bold")
       .fillColor("#ffffff")
-      .text("GHARPAN ORGANIZATION", 130, 25);
+      .text("GHARPAN FOUNDATION", 130, 25);
     doc
       .fontSize(12)
       .font("Helvetica")
@@ -2180,7 +2180,7 @@ router.get("/:id/download", async (req, res) => {
                 ? "Medical Record"
                 : "Details"
             } - ${resident.registrationNo || resident._id}`,
-          Author: "Gharpan Organization",
+          Author: "Gharpan Foundation",
           Subject: `Resident ${template.charAt(0).toUpperCase() + template.slice(1)
             } Report`,
           Keywords: "resident, registration, details, gharpan, " + template,
@@ -2908,7 +2908,7 @@ router.get("/:id/download", async (req, res) => {
               .font("Helvetica-Bold")
               .fillColor(primaryGreen)
               .text(
-                "Gharpan Organization - Residential Care & Rehabilitation Center",
+                "Gharpan Foundation - Residential Care & Rehabilitation Center",
                 40,
                 footerY + 15,
                 { width: 520, align: 'center' }
@@ -3057,7 +3057,7 @@ router.get("/:id/print", async (req, res) => {
       size: "A4",
       info: {
         Title: `Resident Print - ${resident.registrationNo || resident._id}`,
-        Author: "Gharpan Organization",
+        Author: "Gharpan Foundation",
         Subject: "Resident Registration Details for Printing",
         Keywords: "resident, registration, details, gharpan, print",
       },

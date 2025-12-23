@@ -18,7 +18,7 @@ function Navbar() {
         {/* Left Side Logo */}
         <Link to="/dashboard" className="navbar-brand d-flex align-items-center">
           <img src={logo} alt="Logo" className="logo me-3" />
-          <span className="brand-text fw-bold fs-5">Gharpan Organisation</span>
+          <span className="brand-text fw-bold fs-5">Gharpan Foundation</span>
         </Link>
 
         {/* Right Side Logout Button */}
