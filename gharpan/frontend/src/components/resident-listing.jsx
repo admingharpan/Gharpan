@@ -778,1402 +778,1503 @@ const ResidentsListing = () => {
     );
   };
 
-  // Update Resident Modal Component
-  const UpdateResidentModal = () => {
-    if (!showUpdateModal || !updateResident) return null;
+  // Update Resident Modal Component - FIXED
+const UpdateResidentModal = () => {
+  if (!showUpdateModal || !updateResident) return null;
 
-    const formatDateForInput = (dateValue) => {
-      if (!dateValue) return "";
-      try {
-        const date = new Date(dateValue);
-        if (isNaN(date.getTime())) return "";
-        return date.toISOString().split("T")[0];
-      } catch (error) {
-        console.error("Date formatting error:", error);
-        return "";
+  // KEY FIX: Use local state to prevent parent re-renders on every keystroke
+  const [localFormData, setLocalFormData] = useState(formData);
+
+  // Sync local state when modal opens
+  useEffect(() => {
+    setLocalFormData(formData);
+  }, [showUpdateModal, formData]);
+
+  const formatDateForInput = (dateValue) => {
+    if (!dateValue) return "";
+    try {
+      const date = new Date(dateValue);
+      if (isNaN(date.getTime())) return "";
+      return date.toISOString().split("T")[0];
+    } catch (error) {
+      console.error("Date formatting error:", error);
+      return "";
+    }
+  };
+
+  // LOCAL handler - updates only local state (fast, no parent re-render)
+  const handleLocalInputChange = (fieldName, value) => {
+    setLocalFormData(prevData => {
+      const newData = { ...prevData };
+      if (fieldName.startsWith('address.')) {
+        const addressField = fieldName.split('.')[1];
+        newData.address = { ...newData.address, [addressField]: value };
+      } else {
+        newData[fieldName] = value;
       }
-    };
+      return newData;
+    });
+  };
 
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div
-          className="bg-gray-50 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col"
-          key={updateResident._id}
-        >
-          {/* Modal Header */}
-          <div className="bg-white p-6 border-b border-gray-200 rounded-t-lg shadow-sm flex-shrink-0">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800">
-                  Update Resident Information
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  {updateResident.name ||
-                    updateResident.nameGivenByOrganization}{" "}
-                  - {updateResident.registrationNo}
+  // PARENT handler - called on blur to track changes
+  const handleInputBlur = (fieldName, value) => {
+    handleFormInputChange(fieldName, value);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div
+        className="bg-gray-50 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+        key={updateResident._id}
+      >
+        {/* Modal Header */}
+        <div className="bg-white p-6 border-b border-gray-200 rounded-t-lg shadow-sm flex-shrink-0">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">
+                Update Resident Information
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                {updateResident.name ||
+                  updateResident.nameGivenByOrganization}{" "}
+                - {updateResident.registrationNo}
+              </p>
+              {changedFields.size > 0 && (
+                <p className="text-sm text-blue-600 mt-1">
+                  {changedFields.size} field{changedFields.size > 1 ? "s" : ""} modified
                 </p>
-                {changedFields.size > 0 && (
-                  <p className="text-sm text-blue-600 mt-1">
-                    {changedFields.size} field{changedFields.size > 1 ? "s" : ""} modified
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={closeUpdateModal}
-                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-                type="button"
-              >
-                ×
-              </button>
+              )}
             </div>
+            <button
+              onClick={closeUpdateModal}
+              className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+              type="button"
+            >
+              ×
+            </button>
           </div>
+        </div>
 
-          {/* Form Content */}
-          <div
-            className="p-6 space-y-6 overflow-y-auto flex-1"
-            style={{
-              scrollBehavior: 'auto'
-            }}
-          >
-            {/* Error Display */}
-            {error && error.includes("updated successfully") ? (
-              <div
-                className="alert alert-success d-flex align-items-center"
-                role="alert"
-              >
-                <svg
-                  className="bi flex-shrink-0 me-2"
-                  width="24"
-                  height="24"
-                  role="img"
-                >
-                  <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
-                </svg>
-                <div>{error}</div>
-              </div>
-            ) : error && !error.includes("updated successfully") && !error.includes("No changes detected") ? (
-              <div
-                className="alert alert-danger d-flex align-items-center"
-                role="alert"
-              >
-                <svg
-                  className="bi flex-shrink-0 me-2"
-                  width="24"
-                  height="24"
-                  role="img"
-                >
-                  <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-                </svg>
-                <div>{error}</div>
-              </div>
-            ) : error && error.includes("No changes detected") ? (
-              <div
-                className="alert alert-warning d-flex align-items-center"
-                role="alert"
-              >
-                <svg
-                  className="bi flex-shrink-0 me-2"
-                  width="24"
-                  height="24"
-                  role="img"
-                >
-                  <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-                </svg>
-                <div>{error}</div>
-              </div>
-            ) : null}
-
-            {/* Basic Information Section */}
-            <div className="p-5 rounded-3 jumbotron mt-0 shadow-sm bg-white">
-              <h3
-                className="heading mb-4"
-                style={{
-                  fontWeight: 700,
-                  fontSize: "1.3rem",
-                  color: "#0A400C",
-                }}
-              >
-                Basic Information
-              </h3>
-              <div className="row g-4">
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Registration Number
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.registrationNo || ""}
-                    onChange={(e) => handleFormInputChange("registrationNo", e.target.value)}
-                    placeholder="Registration number"
-                    disabled
-                    style={{ backgroundColor: '#f8f9fa' }}
-                  />
-                  <small className="text-muted">Registration number cannot be changed</small>
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Admission Date
-                  </label>
-                  <input
-                    type="date"
-                    className="form-control"
-                    value={formatDateForInput(formData.admissionDate)}
-                    onChange={(e) => handleFormInputChange("admissionDate", e.target.value)}
-                    max={new Date().toISOString().split("T")[0]}
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.name || ""}
-                    onChange={(e) => handleFormInputChange("name", e.target.value)}
-                    placeholder="Enter full name"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Name Given by Organization
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.nameGivenByOrganization || ""}
-                    onChange={(e) => handleFormInputChange("nameGivenByOrganization", e.target.value)}
-                    placeholder="Organization assigned name"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Date of Birth
-                  </label>
-                  <input
-                    type="date"
-                    className="form-control"
-                    value={formatDateForInput(formData.dateOfBirth)}
-                    onChange={(e) => handleFormInputChange("dateOfBirth", e.target.value)}
-                    max={new Date().toISOString().split("T")[0]}
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Age
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={formData.age || ""}
-                    onChange={(e) => handleFormInputChange("age", e.target.value)}
-                    placeholder="Age in years"
-                    min="0"
-                    max="150"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Gender
-                  </label>
-                  <select
-                    className="form-select"
-                    value={formData.gender || ""}
-                    onChange={(e) => handleFormInputChange("gender", e.target.value)}
-                  >
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Weight (kg)
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={formData.weight || ""}
-                    onChange={(e) => handleFormInputChange("weight", e.target.value)}
-                    placeholder="Weight in kg"
-                    min="0"
-                    max="500"
-                    step="0.1"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Height (cm)
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={formData.height || ""}
-                    onChange={(e) => handleFormInputChange("height", e.target.value)}
-                    placeholder="Height in cm"
-                    min="0"
-                    max="300"
-                    step="0.1"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Religion
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.religion || ""}
-                    onChange={(e) => handleFormInputChange("religion", e.target.value)}
-                    placeholder="Religion"
-                  />
-                </div>
-                <div className="col-12">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Identification Mark
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.identificationMark || ""}
-                    onChange={(e) => handleFormInputChange("identificationMark", e.target.value)}
-                    placeholder="Any identifying marks or features"
-                  />
-                </div>
-              </div>
+        {/* Form Content */}
+        <div
+          className="p-6 space-y-6 overflow-y-auto flex-1"
+          style={{
+            scrollBehavior: 'auto'
+          }}
+        >
+          {/* Error Display */}
+          {error && error.includes("updated successfully") ? (
+            <div
+              className="alert alert-success d-flex align-items-center"
+              role="alert"
+            >
+              <div>{error}</div>
             </div>
-
-            {/* Contact Information Section */}
-            <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
-              <h3
-                className="heading mb-4"
-                style={{
-                  fontWeight: 700,
-                  fontSize: "1.3rem",
-                  color: "#0A400C",
-                }}
-              >
-                Contact Information
-              </h3>
-              <div className="row g-4">
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Mobile Number
-                  </label>
-                  <input
-                    type="tel"
-                    className="form-control"
-                    value={formData.mobileNo || ""}
-                    onChange={(e) => handleFormInputChange("mobileNo", e.target.value)}
-                    placeholder="10-digit mobile number"
-                    maxLength="10"
-                    pattern="[0-9]{10}"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Alternative Contact
-                  </label>
-                  <input
-                    type="tel"
-                    className="form-control"
-                    value={formData.phoneNumber || formData.alternativeContact || ""}
-                    onChange={(e) => handleFormInputChange("phoneNumber", e.target.value)}
-                    placeholder="Alternative contact number"
-                    maxLength="10"
-                    pattern="[0-9]{10}"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    value={formData.emailAddress || ""}
-                    onChange={(e) => handleFormInputChange("emailAddress", e.target.value)}
-                    placeholder="Email address"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Social Media Handle
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.socialMediaHandle || ""}
-                    onChange={(e) => handleFormInputChange("socialMediaHandle", e.target.value)}
-                    placeholder="Social media profile"
-                  />
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Relative Who Admitted
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.relativeAdmit || ""}
-                    onChange={(e) => handleFormInputChange("relativeAdmit", e.target.value)}
-                    placeholder="Name of relative who admitted"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Relation with Admitter
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.relationWith || ""}
-                    onChange={(e) => handleFormInputChange("relationWith", e.target.value)}
-                    placeholder="Relationship with person who admitted"
-                  />
-                </div>
-
-                {/* Emergency Contact */}
-                <div className="col-12 mt-4">
-                  <h5 className="text-danger mb-3">
-                    Emergency Contact
-                  </h5>
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Emergency Contact Name
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.emergencyContactName || ""}
-                    onChange={(e) => handleFormInputChange("emergencyContactName", e.target.value)}
-                    placeholder="Emergency contact person"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Emergency Contact Number
-                  </label>
-                  <input
-                    type="tel"
-                    className="form-control"
-                    value={formData.emergencyContactNumber || ""}
-                    onChange={(e) => handleFormInputChange("emergencyContactNumber", e.target.value)}
-                    placeholder="Emergency contact number"
-                    maxLength="10"
-                    pattern="[0-9]{10}"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Emergency Contact Relationship
-                  </label>
-                  <select
-                    className="form-select"
-                    value={formData.emergencyContactRelationship || ""}
-                    onChange={(e) => handleFormInputChange("emergencyContactRelationship", e.target.value)}
-                  >
-                    <option value="">Select Relationship</option>
-                    <option value="Parent">Parent</option>
-                    <option value="Sibling">Sibling</option>
-                    <option value="Relative">Relative</option>
-                    <option value="Friend">Friend</option>
-                    <option value="Doctor">Doctor</option>
-                    <option value="Social Worker">Social Worker</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-
-                {/* Identity Documents */}
-                <div className="col-12 mt-4">
-                  <h5 className="text-info mb-3">
-                    Identity Documents
-                  </h5>
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Voter ID
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.voterId || ""}
-                    onChange={(e) => handleFormInputChange("voterId", e.target.value)}
-                    placeholder="Voter ID number"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Aadhaar Number
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.aadhaarNumber || ""}
-                    onChange={(e) => handleFormInputChange("aadhaarNumber", e.target.value)}
-                    placeholder="12-digit Aadhaar number"
-                    maxLength="12"
-                    pattern="[0-9]{12}"
-                  />
-                </div>
-              </div>
+          ) : error && !error.includes("updated successfully") && !error.includes("No changes detected") ? (
+            <div
+              className="alert alert-danger d-flex align-items-center"
+              role="alert"
+            >
+              <div>{error}</div>
             </div>
-
-            {/* Health Information Section */}
-            <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
-              <h3
-                className="heading mb-4"
-                style={{
-                  fontWeight: 700,
-                  fontSize: "1.3rem",
-                  color: "#0A400C",
-                }}
-              >
-                Health Information
-              </h3>
-              <div className="row g-4">
-                {/* General Health Status */}
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Health Status
-                  </label>
-                  <select
-                    className="form-select"
-                    value={formData.healthStatus || ""}
-                    onChange={(e) => handleFormInputChange("healthStatus", e.target.value)}
-                  >
-                    <option value="">Select Status</option>
-                    <option value="Excellent">Excellent</option>
-                    <option value="Good">Good</option>
-                    <option value="Fair">Fair</option>
-                    <option value="Poor">Poor</option>
-                    <option value="Critical">Critical</option>
-                    <option value="Stable">Stable</option>
-                    <option value="Improving">Improving</option>
-                    <option value="Declining">Declining</option>
-                  </select>
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Blood Group
-                  </label>
-                  <select
-                    className="form-select"
-                    value={formData.bloodGroup || ""}
-                    onChange={(e) => handleFormInputChange("bloodGroup", e.target.value)}
-                  >
-                    <option value="">Select Blood Group</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                    <option value="Unknown">Unknown</option>
-                  </select>
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Category
-                  </label>
-                  <select
-                    className="form-select"
-                    value={formData.category || ""}
-                    onChange={(e) => handleFormInputChange("category", e.target.value)}
-                  >
-                    <option value="">Select Category</option>
-                    <option value="Other">Other</option>
-                    <option value="Emergency">Emergency</option>
-                    <option value="Routine">Routine</option>
-                  </select>
-                </div>
-
-                {/* Vital Signs */}
-                <div className="col-12 mt-4">
-                  <h5 className="text-info mb-3">
-                    Vital Signs & Physical Metrics
-                  </h5>
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Body Temperature (°C)
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={formData.bodyTemperature || ""}
-                    onChange={(e) => handleFormInputChange("bodyTemperature", e.target.value)}
-                    placeholder="Normal: 36.5-37.5"
-                    min="30"
-                    max="45"
-                    step="0.1"
-                  />
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Heart Rate (BPM)
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={formData.heartRate || ""}
-                    onChange={(e) => handleFormInputChange("heartRate", e.target.value)}
-                    placeholder="Normal: 60-100"
-                    min="40"
-                    max="200"
-                  />
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Respiratory Rate
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={formData.respiratoryRate || ""}
-                    onChange={(e) => handleFormInputChange("respiratoryRate", e.target.value)}
-                    placeholder="Normal: 12-20"
-                    min="10"
-                    max="60"
-                  />
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Blood Pressure
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.bloodPressure || ""}
-                    onChange={(e) => handleFormInputChange("bloodPressure", e.target.value)}
-                    placeholder="e.g., 120/80"
-                  />
-                </div>
-
-                {/* Disability and Medical History */}
-                <div className="col-12 mt-4">
-                  <h5 className="text-warning mb-3">
-                    Disability & Medical History
-                  </h5>
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Disability Status
-                  </label>
-                  <select
-                    className="form-select"
-                    value={formData.disabilityStatus || ""}
-                    onChange={(e) => handleFormInputChange("disabilityStatus", e.target.value)}
-                  >
-                    <option value="">Select Status</option>
-                    <option value="None">No Disability</option>
-                    <option value="Physical">Physical Disability</option>
-                    <option value="Mental">Mental Disability</option>
-                    <option value="Intellectual">Intellectual Disability</option>
-                    <option value="Sensory">Sensory Disability</option>
-                    <option value="Multiple">Multiple Disabilities</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Rehabilitation Status
-                  </label>
-                  <select
-                    className="form-select"
-                    value={formData.rehabStatus || ""}
-                    onChange={(e) => handleFormInputChange("rehabStatus", e.target.value)}
-                  >
-                    <option value="">Select Status</option>
-                    <option value="Not Required">Not Required</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
-                    <option value="On Hold">On Hold</option>
-                    <option value="Discontinued">Discontinued</option>
-                    <option value="Required but not started">Required but not started</option>
-                  </select>
-                </div>
-                <div className="col-12">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Disability Details
-                  </label>
-                  <textarea
-                    className="form-control"
-                    rows="3"
-                    value={formData.disabilityDetails || ""}
-                    onChange={(e) => handleFormInputChange("disabilityDetails", e.target.value)}
-                    placeholder="Detailed description of disability, limitations, or special needs"
-                  />
-                </div>
-
-                {/* Allergies and Medical Conditions */}
-                <div className="col-12 mt-4">
-                  <h5 className="text-danger mb-3">
-                    Allergies & Medical Conditions
-                  </h5>
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Known Allergies
-                  </label>
-                  <textarea
-                    className="form-control"
-                    rows="4"
-                    value={formData.allergies || ""}
-                    onChange={(e) => handleFormInputChange("allergies", e.target.value)}
-                    placeholder="List any known allergies (food, medication, environmental)"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Medical Conditions
-                  </label>
-                  <textarea
-                    className="form-control"
-                    rows="4"
-                    value={formData.medicalConditions || ""}
-                    onChange={(e) => handleFormInputChange("medicalConditions", e.target.value)}
-                    placeholder="Current medical conditions, chronic illnesses, past surgeries"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Current Medications
-                  </label>
-                  <textarea
-                    className="form-control"
-                    rows="4"
-                    value={formData.medications || ""}
-                    onChange={(e) => handleFormInputChange("medications", e.target.value)}
-                    placeholder="List current medications with dosage and frequency"
-                  />
-                </div>
-
-                {/* Additional Health Information */}
-                <div className="col-12 mt-4">
-                  <h5 className="text-success mb-3">
-                    Additional Health Information
-                  </h5>
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Primary Doctor
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.primaryDoctor || ""}
-                    onChange={(e) => handleFormInputChange("primaryDoctor", e.target.value)}
-                    placeholder="Name of primary doctor"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Preferred Hospital
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.preferredHospital || ""}
-                    onChange={(e) => handleFormInputChange("preferredHospital", e.target.value)}
-                    placeholder="Preferred hospital for treatment"
-                  />
-                </div>
-                <div className="col-12">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Medical History Notes
-                  </label>
-                  <textarea
-                    className="form-control"
-                    rows="3"
-                    value={formData.medicalHistory || ""}
-                    onChange={(e) => handleFormInputChange("medicalHistory", e.target.value)}
-                    placeholder="Additional medical history, family history, or important notes"
-                  />
-                </div>
-              </div>
+          ) : error && error.includes("No changes detected") ? (
+            <div
+              className="alert alert-warning d-flex align-items-center"
+              role="alert"
+            >
+              <div>{error}</div>
             </div>
+          ) : null}
 
-            {/* Address Information Section */}
-            <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
-              <h3
-                className="heading mb-4"
-                style={{
-                  fontWeight: 700,
-                  fontSize: "1.3rem",
-                  color: "#0A400C",
-                }}
-              >
-                Address Information
-              </h3>
-              <div className="row g-4">
-                {/* Current Address */}
-                <div className="col-12">
-                  <h5 className="text-primary mb-3">
-                    Current/Permanent Address
-                  </h5>
-                </div>
-                <div className="col-12">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Full Address
-                  </label>
-                  <textarea
-                    className="form-control"
-                    rows="3"
-                    value={formData.address?.fullAddress || ""}
-                    onChange={(e) => handleFormInputChange("address.fullAddress", e.target.value)}
-                    placeholder="Complete address with house number, street, area, landmarks"
-                  />
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    City/Town
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.address?.city || ""}
-                    onChange={(e) => handleFormInputChange("address.city", e.target.value)}
-                    placeholder="City or town name"
-                  />
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    District
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.address?.district || ""}
-                    onChange={(e) => handleFormInputChange("address.district", e.target.value)}
-                    placeholder="District name"
-                  />
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    State
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.address?.state || ""}
-                    onChange={(e) => handleFormInputChange("address.state", e.target.value)}
-                    placeholder="State name"
-                  />
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Country
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.address?.country || "India"}
-                    onChange={(e) => handleFormInputChange("address.country", e.target.value)}
-                    placeholder="Country"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    PIN Code
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.address?.pincode || ""}
-                    onChange={(e) => handleFormInputChange("address.pincode", e.target.value)}
-                    placeholder="6-digit PIN code"
-                    maxLength="6"
-                    pattern="[0-9]{6}"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Latitude
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={formData.address?.latitude || ""}
-                    onChange={(e) => handleFormInputChange("address.latitude", e.target.value)}
-                    placeholder="GPS Latitude"
-                    step="0.000001"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Longitude
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={formData.address?.longitude || ""}
-                    onChange={(e) => handleFormInputChange("address.longitude", e.target.value)}
-                    placeholder="GPS Longitude"
-                    step="0.000001"
-                  />
-                </div>
-
-                {/* Alternative/Emergency Address */}
-                <div className="col-12 mt-4">
-                  <h5 className="text-secondary mb-3">
-                    Alternative/Emergency Address
-                  </h5>
-                </div>
-                <div className="col-12">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Alternative Address
-                  </label>
-                  <textarea
-                    className="form-control"
-                    rows="2"
-                    value={formData.alternativeAddress || ""}
-                    onChange={(e) => handleFormInputChange("alternativeAddress", e.target.value)}
-                    placeholder="Alternative contact address (if different from permanent address)"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Nearest Landmark
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.nearestLandmark || ""}
-                    onChange={(e) => handleFormInputChange("nearestLandmark", e.target.value)}
-                    placeholder="Nearest landmark for easy location"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Distance from Facility (km)
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={formData.distanceFromFacility || ""}
-                    onChange={(e) => handleFormInputChange("distanceFromFacility", e.target.value)}
-                    placeholder="Distance in kilometers"
-                    min="0"
-                    step="0.1"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Informer Information Section */}
-            <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
-              <h3
-                className="heading mb-4"
-                style={{
-                  fontWeight: 700,
-                  fontSize: "1.3rem",
-                  color: "#0A400C",
-                }}
-              >
-                Informer Information
-              </h3>
-              <div className="row g-4">
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Informer Name
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.informerName || ""}
-                    onChange={(e) => handleFormInputChange("informerName", e.target.value)}
-                    placeholder="Name of person who provided information"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Informer Mobile
-                  </label>
-                  <input
-                    type="tel"
-                    className="form-control"
-                    value={formData.informerMobile || ""}
-                    onChange={(e) => handleFormInputChange("informerMobile", e.target.value)}
-                    placeholder="Informer's mobile number"
-                    maxLength="10"
-                    pattern="[0-9]{10}"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Relationship to Resident
-                  </label>
-                  <select
-                    className="form-select"
-                    value={formData.informerRelationship || ""}
-                    onChange={(e) => handleFormInputChange("informerRelationship", e.target.value)}
-                  >
-                    <option value="">Select Relationship</option>
-                    <option value="Family Member">Family Member</option>
-                    <option value="Friend">Friend</option>
-                    <option value="Neighbor">Neighbor</option>
-                    <option value="Social Worker">Social Worker</option>
-                    <option value="Police">Police</option>
-                    <option value="Hospital Staff">Hospital Staff</option>
-                    <option value="Government Official">Government Official</option>
-                    <option value="NGO Worker">NGO Worker</option>
-                    <option value="Self">Self</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Information Date
-                  </label>
-                  <input
-                    type="date"
-                    className="form-control"
-                    value={formatDateForInput(formData.informationDate)}
-                    onChange={(e) => handleFormInputChange("informationDate", e.target.value)}
-                    max={new Date().toISOString().split("T")[0]}
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Informer Address
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.informerAddress || ""}
-                    onChange={(e) => handleFormInputChange("informerAddress", e.target.value)}
-                    placeholder="Informer's address"
-                  />
-                </div>
-                <div className="col-12">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Information Details
-                  </label>
-                  <textarea
-                    className="form-control"
-                    rows="3"
-                    value={formData.informationDetails || ""}
-                    onChange={(e) => handleFormInputChange("informationDetails", e.target.value)}
-                    placeholder="Details about how and why this information was provided"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Transport & Organization Information Section */}
-            <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
-              <h3
-                className="heading mb-4"
-                style={{
-                  fontWeight: 700,
-                  fontSize: "1.3rem",
-                  color: "#0A400C",
-                }}
-              >
-                Transport & Organization Information
-              </h3>
-              <div className="row g-4">
-                {/* Transport Details */}
-                <div className="col-12">
-                  <h5 className="text-info mb-3">
-                    Transport Details
-                  </h5>
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Vehicle Number
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.conveyanceVehicleNo || ""}
-                    onChange={(e) => handleFormInputChange("conveyanceVehicleNo", e.target.value)}
-                    placeholder="Transport vehicle number"
-                    style={{ textTransform: 'uppercase' }}
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Driver Name
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.driverName || ""}
-                    onChange={(e) => handleFormInputChange("driverName", e.target.value)}
-                    placeholder="Driver's full name"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Driver Mobile
-                  </label>
-                  <input
-                    type="tel"
-                    className="form-control"
-                    value={formData.driverMobile || ""}
-                    onChange={(e) => handleFormInputChange("driverMobile", e.target.value)}
-                    placeholder="Driver's mobile number"
-                    maxLength="10"
-                    pattern="[0-9]{10}"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Pick Up Place
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.pickUpPlace || ""}
-                    onChange={(e) => handleFormInputChange("pickUpPlace", e.target.value)}
-                    placeholder="Location where resident was picked up"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Pick Up Time
-                  </label>
-                  <input
-                    type="datetime-local"
-                    className="form-control"
-                    value={formData.pickUpTime ? new Date(formData.pickUpTime).toISOString().slice(0, 16) : ""}
-                    onChange={(e) => handleFormInputChange("pickUpTime", e.target.value)}
-                  />
-                </div>
-
-                {/* Organization Details */}
-                <div className="col-12 mt-4">
-                  <h5 className="text-success mb-3">
-                    Organization & Admission Details
-                  </h5>
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Admitted By
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.admittedBy || ""}
-                    onChange={(e) => handleFormInputChange("admittedBy", e.target.value)}
-                    placeholder="Name of admitting officer"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Data Entrant Name
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.entrantName || ""}
-                    onChange={(e) => handleFormInputChange("entrantName", e.target.value)}
-                    placeholder="Name of person who entered data"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Ward Assignment
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.ward || ""}
-                    onChange={(e) => handleFormInputChange("ward", e.target.value)}
-                    placeholder="Ward or room assignment"
-                  />
-                </div>
-
-                {/* Financial & Documentation */}
-                <div className="col-12 mt-4">
-                  <h5 className="text-warning mb-3">
-                    Financial & Documentation
-                  </h5>
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Receipt Number
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.receiptNo || ""}
-                    onChange={(e) => handleFormInputChange("receiptNo", e.target.value)}
-                    placeholder="Financial receipt number"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Letter Number
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.letterNo || ""}
-                    onChange={(e) => handleFormInputChange("letterNo", e.target.value)}
-                    placeholder="Official letter number"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Item Amount (₹)
-                  </label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={formData.itemAmount || ""}
-                    onChange={(e) => handleFormInputChange("itemAmount", e.target.value)}
-                    placeholder="Value of items/money"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-                <div className="col-md-8">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Item Description
-                  </label>
-                  <textarea
-                    className="form-control"
-                    rows="3"
-                    value={formData.itemDescription || ""}
-                    onChange={(e) => handleFormInputChange("itemDescription", e.target.value)}
-                    placeholder="Detailed description of personal belongings, money, or items found with resident"
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Video Documentation
-                  </label>
-                  <input
-                    type="url"
-                    className="form-control"
-                    value={formData.videoUrl || ""}
-                    onChange={(e) => handleFormInputChange("videoUrl", e.target.value)}
-                    placeholder="Link to video documentation"
-                  />
-                  <small className="text-muted">Link to any video documentation of admission</small>
-                </div>
-
-                {/* Additional Organization Fields */}
-                <div className="col-12 mt-4">
-                  <h5 className="text-secondary mb-3">
-                    Additional Information
-                  </h5>
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Organization ID
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.organizationId || ""}
-                    onChange={(e) => handleFormInputChange("organizationId", e.target.value)}
-                    placeholder="Internal organization ID"
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Admission Status
-                  </label>
-                  <select
-                    className="form-select"
-                    value={formData.admissionStatus || ""}
-                    onChange={(e) => handleFormInputChange("admissionStatus", e.target.value)}
-                  >
-                    <option value="">Select Status</option>
-                    <option value="Active">Active</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Discharged">Discharged</option>
-                    <option value="Transferred">Transferred</option>
-                    <option value="On Leave">On Leave</option>
-                    <option value="Absconded">Absconded</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Comments Section */}
-            <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
-              <h3
-                className="heading mb-4"
-                style={{
-                  fontWeight: 700,
-                  fontSize: "1.3rem",
-                  color: "#0A400C",
-                }}
-              >
-                Additional Comments & Notes
-              </h3>
-              <div className="row g-4">
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    General Comments
-                  </label>
-                  <textarea
-                    className="form-control"
-                    rows="4"
-                    value={formData.comments || ""}
-                    onChange={(e) => handleFormInputChange("comments", e.target.value)}
-                    placeholder="General notes, observations, or important information about the resident..."
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Medical Notes
-                  </label>
-                  <textarea
-                    className="form-control"
-                    rows="4"
-                    value={formData.medicalNotes || ""}
-                    onChange={(e) => handleFormInputChange("medicalNotes", e.target.value)}
-                    placeholder="Specific medical observations, treatment notes, or health concerns..."
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Behavioral Notes
-                  </label>
-                  <textarea
-                    className="form-control"
-                    rows="3"
-                    value={formData.behavioralNotes || ""}
-                    onChange={(e) => handleFormInputChange("behavioralNotes", e.target.value)}
-                    placeholder="Behavioral patterns, social interactions, special needs..."
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Care Instructions
-                  </label>
-                  <textarea
-                    className="form-control"
-                    rows="3"
-                    value={formData.careInstructions || ""}
-                    onChange={(e) => handleFormInputChange("careInstructions", e.target.value)}
-                    placeholder="Special care instructions, restrictions, or precautions..."
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Priority Level
-                  </label>
-                  <select
-                    className="form-select"
-                    value={formData.priorityLevel || ""}
-                    onChange={(e) => handleFormInputChange("priorityLevel", e.target.value)}
-                  >
-                    <option value="">Select Priority</option>
-                    <option value="Low">Low</option>
-                    <option value="Normal">Normal</option>
-                    <option value="High">High</option>
-                    <option value="Critical">Critical</option>
-                    <option value="Emergency">Emergency</option>
-                  </select>
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Last Update Date
-                  </label>
-                  <input
-                    type="date"
-                    className="form-control"
-                    value={formatDateForInput(formData.lastUpdateDate) || new Date().toISOString().split("T")[0]}
-                    onChange={(e) => handleFormInputChange("lastUpdateDate", e.target.value)}
-                    max={new Date().toISOString().split("T")[0]}
-                  />
-                </div>
-                <div className="col-md-4">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Updated By
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={formData.updatedBy || ""}
-                    onChange={(e) => handleFormInputChange("updatedBy", e.target.value)}
-                    placeholder="Name of person making this update"
-                  />
-                </div>
-                <div className="col-12">
-                  <label className="form-label" style={{ fontWeight: 600 }}>
-                    Update Summary
-                  </label>
-                  <textarea
-                    className="form-control"
-                    rows="2"
-                    value={formData.updateSummary || ""}
-                    onChange={(e) => handleFormInputChange("updateSummary", e.target.value)}
-                    placeholder="Brief summary of changes made in this update..."
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
+          {/* Basic Information Section */}
           <div className="p-5 rounded-3 jumbotron mt-0 shadow-sm bg-white">
-            <div className="d-flex justify-content-between align-items-center">
-              <div className="text-sm text-gray-600">
-                {changedFields.size > 0 ? (
-                  <span className="text-blue-600">
-                    {changedFields.size} field{changedFields.size > 1 ? "s" : ""} will be updated
-                  </span>
-                ) : (
-                  <span>No changes detected</span>
-                )}
+            <h3
+              className="heading mb-4"
+              style={{
+                fontWeight: 700,
+                fontSize: "1.3rem",
+                color: "#0A400C",
+              }}
+            >
+              Basic Information
+            </h3>
+            <div className="row g-4">
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Registration Number
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.registrationNo || ""}
+                  onChange={(e) => handleLocalInputChange("registrationNo", e.target.value)}
+                  onBlur={(e) => handleInputBlur("registrationNo", e.target.value)}
+                  placeholder="Registration number"
+                  disabled
+                  style={{ backgroundColor: '#f8f9fa' }}
+                />
+                <small className="text-muted">Registration number cannot be changed</small>
               </div>
-              <div className="d-flex gap-3">
-                <button
-                  type="button"
-                  onClick={closeUpdateModal}
-                  className="btn btn-secondary px-4"
-                  disabled={updateLoading}
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Admission Date
+                </label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={formatDateForInput(localFormData.admissionDate)}
+                  onChange={(e) => handleLocalInputChange("admissionDate", e.target.value)}
+                  onBlur={(e) => handleInputBlur("admissionDate", e.target.value)}
+                  max={new Date().toISOString().split("T")[0]}
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.name || ""}
+                  onChange={(e) => handleLocalInputChange("name", e.target.value)}
+                  onBlur={(e) => handleInputBlur("name", e.target.value)}
+                  placeholder="Enter full name"
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Name Given by Organization
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.nameGivenByOrganization || ""}
+                  onChange={(e) => handleLocalInputChange("nameGivenByOrganization", e.target.value)}
+                  onBlur={(e) => handleInputBlur("nameGivenByOrganization", e.target.value)}
+                  placeholder="Organization assigned name"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Date of Birth
+                </label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={formatDateForInput(localFormData.dateOfBirth)}
+                  onChange={(e) => handleLocalInputChange("dateOfBirth", e.target.value)}
+                  onBlur={(e) => handleInputBlur("dateOfBirth", e.target.value)}
+                  max={new Date().toISOString().split("T")[0]}
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Age
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={localFormData.age || ""}
+                  onChange={(e) => handleLocalInputChange("age", e.target.value)}
+                  onBlur={(e) => handleInputBlur("age", e.target.value)}
+                  placeholder="Age in years"
+                  min="0"
+                  max="150"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Gender
+                </label>
+                <select
+                  className="form-select"
+                  value={localFormData.gender || ""}
+                  onChange={(e) => {
+                    handleLocalInputChange("gender", e.target.value);
+                    handleInputBlur("gender", e.target.value);
+                  }}
                 >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={updateResidentData}
-                  disabled={updateLoading || changedFields.size === 0}
-                  className={`btn px-4 ${changedFields.size === 0 ? 'btn-outline-secondary' : ''}`}
-                  style={changedFields.size > 0 ? {
-                    backgroundColor: "#0A400C",
-                    color: "white",
-                    fontWeight: 600,
-                  } : {}}
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Weight (kg)
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={localFormData.weight || ""}
+                  onChange={(e) => handleLocalInputChange("weight", e.target.value)}
+                  onBlur={(e) => handleInputBlur("weight", e.target.value)}
+                  placeholder="Weight in kg"
+                  min="0"
+                  max="500"
+                  step="0.1"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Height (cm)
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={localFormData.height || ""}
+                  onChange={(e) => handleLocalInputChange("height", e.target.value)}
+                  onBlur={(e) => handleInputBlur("height", e.target.value)}
+                  placeholder="Height in cm"
+                  min="0"
+                  max="300"
+                  step="0.1"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Religion
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.religion || ""}
+                  onChange={(e) => handleLocalInputChange("religion", e.target.value)}
+                  onBlur={(e) => handleInputBlur("religion", e.target.value)}
+                  placeholder="Religion"
+                />
+              </div>
+              <div className="col-12">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Identification Mark
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.identificationMark || ""}
+                  onChange={(e) => handleLocalInputChange("identificationMark", e.target.value)}
+                  onBlur={(e) => handleInputBlur("identificationMark", e.target.value)}
+                  placeholder="Any identifying marks or features"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Information Section */}
+          <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
+            <h3
+              className="heading mb-4"
+              style={{
+                fontWeight: 700,
+                fontSize: "1.3rem",
+                color: "#0A400C",
+              }}
+            >
+              Contact Information
+            </h3>
+            <div className="row g-4">
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Mobile Number
+                </label>
+                <input
+                  type="tel"
+                  className="form-control"
+                  value={localFormData.mobileNo || ""}
+                  onChange={(e) => handleLocalInputChange("mobileNo", e.target.value)}
+                  onBlur={(e) => handleInputBlur("mobileNo", e.target.value)}
+                  placeholder="10-digit mobile number"
+                  maxLength="10"
+                  pattern="[0-9]{10}"
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Alternative Contact
+                </label>
+                <input
+                  type="tel"
+                  className="form-control"
+                  value={localFormData.phoneNumber || localFormData.alternativeContact || ""}
+                  onChange={(e) => handleLocalInputChange("phoneNumber", e.target.value)}
+                  onBlur={(e) => handleInputBlur("phoneNumber", e.target.value)}
+                  placeholder="Alternative contact number"
+                  maxLength="10"
+                  pattern="[0-9]{10}"
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  className="form-control"
+                  value={localFormData.emailAddress || ""}
+                  onChange={(e) => handleLocalInputChange("emailAddress", e.target.value)}
+                  onBlur={(e) => handleInputBlur("emailAddress", e.target.value)}
+                  placeholder="Email address"
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Social Media Handle
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.socialMediaHandle || ""}
+                  onChange={(e) => handleLocalInputChange("socialMediaHandle", e.target.value)}
+                  onBlur={(e) => handleInputBlur("socialMediaHandle", e.target.value)}
+                  placeholder="Social media profile"
+                />
+              </div>
+
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Relative Who Admitted
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.relativeAdmit || ""}
+                  onChange={(e) => handleLocalInputChange("relativeAdmit", e.target.value)}
+                  onBlur={(e) => handleInputBlur("relativeAdmit", e.target.value)}
+                  placeholder="Name of relative who admitted"
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Relation with Admitter
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.relationWith || ""}
+                  onChange={(e) => handleLocalInputChange("relationWith", e.target.value)}
+                  onBlur={(e) => handleInputBlur("relationWith", e.target.value)}
+                  placeholder="Relationship with person who admitted"
+                />
+              </div>
+
+              {/* Emergency Contact */}
+              <div className="col-12 mt-4">
+                <h5 className="text-danger mb-3">
+                  Emergency Contact
+                </h5>
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Emergency Contact Name
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.emergencyContactName || ""}
+                  onChange={(e) => handleLocalInputChange("emergencyContactName", e.target.value)}
+                  onBlur={(e) => handleInputBlur("emergencyContactName", e.target.value)}
+                  placeholder="Emergency contact person"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Emergency Contact Number
+                </label>
+                <input
+                  type="tel"
+                  className="form-control"
+                  value={localFormData.emergencyContactNumber || ""}
+                  onChange={(e) => handleLocalInputChange("emergencyContactNumber", e.target.value)}
+                  onBlur={(e) => handleInputBlur("emergencyContactNumber", e.target.value)}
+                  placeholder="Emergency contact number"
+                  maxLength="10"
+                  pattern="[0-9]{10}"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Emergency Contact Relationship
+                </label>
+                <select
+                  className="form-select"
+                  value={localFormData.emergencyContactRelationship || ""}
+                  onChange={(e) => {
+                    handleLocalInputChange("emergencyContactRelationship", e.target.value);
+                    handleInputBlur("emergencyContactRelationship", e.target.value);
+                  }}
                 >
-                  {updateLoading ? (
-                    <>
-                      <span
-                        className="spinner-border spinner-border-sm me-2"
-                        role="status"
-                        aria-hidden="true"
-                      ></span>
-                      Updating...
-                    </>
-                  ) : (
-                    <>
-                      <Edit size={16} className="me-2" />
-                      {changedFields.size > 0 ? `Update ${changedFields.size} Field${changedFields.size > 1 ? "s" : ""}` : "No Changes to Save"}
-                    </>
-                  )}
-                </button>
+                  <option value="">Select Relationship</option>
+                  <option value="Parent">Parent</option>
+                  <option value="Sibling">Sibling</option>
+                  <option value="Relative">Relative</option>
+                  <option value="Friend">Friend</option>
+                  <option value="Doctor">Doctor</option>
+                  <option value="Social Worker">Social Worker</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              {/* Identity Documents */}
+              <div className="col-12 mt-4">
+                <h5 className="text-info mb-3">
+                  Identity Documents
+                </h5>
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Voter ID
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.voterId || ""}
+                  onChange={(e) => handleLocalInputChange("voterId", e.target.value)}
+                  onBlur={(e) => handleInputBlur("voterId", e.target.value)}
+                  placeholder="Voter ID number"
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Aadhaar Number
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.aadhaarNumber || ""}
+                  onChange={(e) => handleLocalInputChange("aadhaarNumber", e.target.value)}
+                  onBlur={(e) => handleInputBlur("aadhaarNumber", e.target.value)}
+                  placeholder="12-digit Aadhaar number"
+                  maxLength="12"
+                  pattern="[0-9]{12}"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Health Information Section */}
+          <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
+            <h3
+              className="heading mb-4"
+              style={{
+                fontWeight: 700,
+                fontSize: "1.3rem",
+                color: "#0A400C",
+              }}
+            >
+              Health Information
+            </h3>
+            <div className="row g-4">
+              {/* General Health Status */}
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Health Status
+                </label>
+                <select
+                  className="form-select"
+                  value={localFormData.healthStatus || ""}
+                  onChange={(e) => {
+                    handleLocalInputChange("healthStatus", e.target.value);
+                    handleInputBlur("healthStatus", e.target.value);
+                  }}
+                >
+                  <option value="">Select Status</option>
+                  <option value="Excellent">Excellent</option>
+                  <option value="Good">Good</option>
+                  <option value="Fair">Fair</option>
+                  <option value="Poor">Poor</option>
+                  <option value="Critical">Critical</option>
+                  <option value="Stable">Stable</option>
+                  <option value="Improving">Improving</option>
+                  <option value="Declining">Declining</option>
+                </select>
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Blood Group
+                </label>
+                <select
+                  className="form-select"
+                  value={localFormData.bloodGroup || ""}
+                  onChange={(e) => {
+                    handleLocalInputChange("bloodGroup", e.target.value);
+                    handleInputBlur("bloodGroup", e.target.value);
+                  }}
+                >
+                  <option value="">Select Blood Group</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                  <option value="Unknown">Unknown</option>
+                </select>
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Category
+                </label>
+                <select
+                  className="form-select"
+                  value={localFormData.category || ""}
+                  onChange={(e) => {
+                    handleLocalInputChange("category", e.target.value);
+                    handleInputBlur("category", e.target.value);
+                  }}
+                >
+                  <option value="">Select Category</option>
+                  <option value="Other">Other</option>
+                  <option value="Emergency">Emergency</option>
+                  <option value="Routine">Routine</option>
+                </select>
+              </div>
+
+              {/* Vital Signs */}
+              <div className="col-12 mt-4">
+                <h5 className="text-info mb-3">
+                  Vital Signs & Physical Metrics
+                </h5>
+              </div>
+              <div className="col-md-3">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Body Temperature (°C)
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={localFormData.bodyTemperature || ""}
+                  onChange={(e) => handleLocalInputChange("bodyTemperature", e.target.value)}
+                  onBlur={(e) => handleInputBlur("bodyTemperature", e.target.value)}
+                  placeholder="Normal: 36.5-37.5"
+                  min="30"
+                  max="45"
+                  step="0.1"
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Heart Rate (BPM)
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={localFormData.heartRate || ""}
+                  onChange={(e) => handleLocalInputChange("heartRate", e.target.value)}
+                  onBlur={(e) => handleInputBlur("heartRate", e.target.value)}
+                  placeholder="Normal: 60-100"
+                  min="40"
+                  max="200"
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Respiratory Rate
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={localFormData.respiratoryRate || ""}
+                  onChange={(e) => handleLocalInputChange("respiratoryRate", e.target.value)}
+                  onBlur={(e) => handleInputBlur("respiratoryRate", e.target.value)}
+                  placeholder="Normal: 12-20"
+                  min="10"
+                  max="60"
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Blood Pressure
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.bloodPressure || ""}
+                  onChange={(e) => handleLocalInputChange("bloodPressure", e.target.value)}
+                  onBlur={(e) => handleInputBlur("bloodPressure", e.target.value)}
+                  placeholder="e.g., 120/80"
+                />
+              </div>
+
+              {/* Disability and Medical History */}
+              <div className="col-12 mt-4">
+                <h5 className="text-warning mb-3">
+                  Disability & Medical History
+                </h5>
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Disability Status
+                </label>
+                <select
+                  className="form-select"
+                  value={localFormData.disabilityStatus || ""}
+                  onChange={(e) => {
+                    handleLocalInputChange("disabilityStatus", e.target.value);
+                    handleInputBlur("disabilityStatus", e.target.value);
+                  }}
+                >
+                  <option value="">Select Status</option>
+                  <option value="None">No Disability</option>
+                  <option value="Physical">Physical Disability</option>
+                  <option value="Mental">Mental Disability</option>
+                  <option value="Intellectual">Intellectual Disability</option>
+                  <option value="Sensory">Sensory Disability</option>
+                  <option value="Multiple">Multiple Disabilities</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Rehabilitation Status
+                </label>
+                <select
+                  className="form-select"
+                  value={localFormData.rehabStatus || ""}
+                  onChange={(e) => {
+                    handleLocalInputChange("rehabStatus", e.target.value);
+                    handleInputBlur("rehabStatus", e.target.value);
+                  }}
+                >
+                  <option value="">Select Status</option>
+                  <option value="Not Required">Not Required</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                  <option value="On Hold">On Hold</option>
+                  <option value="Discontinued">Discontinued</option>
+                  <option value="Required but not started">Required but not started</option>
+                </select>
+              </div>
+              <div className="col-12">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Disability Details
+                </label>
+                <textarea
+                  className="form-control"
+                  rows="3"
+                  value={localFormData.disabilityDetails || ""}
+                  onChange={(e) => handleLocalInputChange("disabilityDetails", e.target.value)}
+                  onBlur={(e) => handleInputBlur("disabilityDetails", e.target.value)}
+                  placeholder="Detailed description of disability, limitations, or special needs"
+                />
+              </div>
+
+              {/* Allergies and Medical Conditions */}
+              <div className="col-12 mt-4">
+                <h5 className="text-danger mb-3">
+                  Allergies & Medical Conditions
+                </h5>
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Known Allergies
+                </label>
+                <textarea
+                  className="form-control"
+                  rows="4"
+                  value={localFormData.allergies || ""}
+                  onChange={(e) => handleLocalInputChange("allergies", e.target.value)}
+                  onBlur={(e) => handleInputBlur("allergies", e.target.value)}
+                  placeholder="List any known allergies (food, medication, environmental)"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Medical Conditions
+                </label>
+                <textarea
+                  className="form-control"
+                  rows="4"
+                  value={localFormData.medicalConditions || ""}
+                  onChange={(e) => handleLocalInputChange("medicalConditions", e.target.value)}
+                  onBlur={(e) => handleInputBlur("medicalConditions", e.target.value)}
+                  placeholder="Current medical conditions, chronic illnesses, past surgeries"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Current Medications
+                </label>
+                <textarea
+                  className="form-control"
+                  rows="4"
+                  value={localFormData.medications || ""}
+                  onChange={(e) => handleLocalInputChange("medications", e.target.value)}
+                  onBlur={(e) => handleInputBlur("medications", e.target.value)}
+                  placeholder="List current medications with dosage and frequency"
+                />
+              </div>
+
+              {/* Additional Health Information */}
+              <div className="col-12 mt-4">
+                <h5 className="text-success mb-3">
+                  Additional Health Information
+                </h5>
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Primary Doctor
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.primaryDoctor || ""}
+                  onChange={(e) => handleLocalInputChange("primaryDoctor", e.target.value)}
+                  onBlur={(e) => handleInputBlur("primaryDoctor", e.target.value)}
+                  placeholder="Name of primary doctor"
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Preferred Hospital
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.preferredHospital || ""}
+                  onChange={(e) => handleLocalInputChange("preferredHospital", e.target.value)}
+                  onBlur={(e) => handleInputBlur("preferredHospital", e.target.value)}
+                  placeholder="Preferred hospital for treatment"
+                />
+              </div>
+              <div className="col-12">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Medical History Notes
+                </label>
+                <textarea
+                  className="form-control"
+                  rows="3"
+                  value={localFormData.medicalHistory || ""}
+                  onChange={(e) => handleLocalInputChange("medicalHistory", e.target.value)}
+                  onBlur={(e) => handleInputBlur("medicalHistory", e.target.value)}
+                  placeholder="Additional medical history, family history, or important notes"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Address Information Section */}
+          <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
+            <h3
+              className="heading mb-4"
+              style={{
+                fontWeight: 700,
+                fontSize: "1.3rem",
+                color: "#0A400C",
+              }}
+            >
+              Address Information
+            </h3>
+            <div className="row g-4">
+              {/* Current Address */}
+              <div className="col-12">
+                <h5 className="text-primary mb-3">
+                  Current/Permanent Address
+                </h5>
+              </div>
+              <div className="col-12">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Full Address
+                </label>
+                <textarea
+                  className="form-control"
+                  rows="3"
+                  value={localFormData.address?.fullAddress || ""}
+                  onChange={(e) => handleLocalInputChange("address.fullAddress", e.target.value)}
+                  onBlur={(e) => handleInputBlur("address.fullAddress", e.target.value)}
+                  placeholder="Complete address with house number, street, area, landmarks"
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  City/Town
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.address?.city || ""}
+                  onChange={(e) => handleLocalInputChange("address.city", e.target.value)}
+                  onBlur={(e) => handleInputBlur("address.city", e.target.value)}
+                  placeholder="City or town name"
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  District
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.address?.district || ""}
+                  onChange={(e) => handleLocalInputChange("address.district", e.target.value)}
+                  onBlur={(e) => handleInputBlur("address.district", e.target.value)}
+                  placeholder="District name"
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  State
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.address?.state || ""}
+                  onChange={(e) => handleLocalInputChange("address.state", e.target.value)}
+                  onBlur={(e) => handleInputBlur("address.state", e.target.value)}
+                  placeholder="State name"
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Country
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.address?.country || "India"}
+                  onChange={(e) => handleLocalInputChange("address.country", e.target.value)}
+                  onBlur={(e) => handleInputBlur("address.country", e.target.value)}
+                  placeholder="Country"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  PIN Code
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.address?.pincode || ""}
+                  onChange={(e) => handleLocalInputChange("address.pincode", e.target.value)}
+                  onBlur={(e) => handleInputBlur("address.pincode", e.target.value)}
+                  placeholder="6-digit PIN code"
+                  maxLength="6"
+                  pattern="[0-9]{6}"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Latitude
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={localFormData.address?.latitude || ""}
+                  onChange={(e) => handleLocalInputChange("address.latitude", e.target.value)}
+                  onBlur={(e) => handleInputBlur("address.latitude", e.target.value)}
+                  placeholder="GPS Latitude"
+                  step="0.000001"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Longitude
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={localFormData.address?.longitude || ""}
+                  onChange={(e) => handleLocalInputChange("address.longitude", e.target.value)}
+                  onBlur={(e) => handleInputBlur("address.longitude", e.target.value)}
+                  placeholder="GPS Longitude"
+                  step="0.000001"
+                />
+              </div>
+
+              {/* Alternative/Emergency Address */}
+              <div className="col-12 mt-4">
+                <h5 className="text-secondary mb-3">
+                  Alternative/Emergency Address
+                </h5>
+              </div>
+              <div className="col-12">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Alternative Address
+                </label>
+                <textarea
+                  className="form-control"
+                  rows="2"
+                  value={localFormData.alternativeAddress || ""}
+                  onChange={(e) => handleLocalInputChange("alternativeAddress", e.target.value)}
+                  onBlur={(e) => handleInputBlur("alternativeAddress", e.target.value)}
+                  placeholder="Alternative contact address (if different from permanent address)"
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Nearest Landmark
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.nearestLandmark || ""}
+                  onChange={(e) => handleLocalInputChange("nearestLandmark", e.target.value)}
+                  onBlur={(e) => handleInputBlur("nearestLandmark", e.target.value)}
+                  placeholder="Nearest landmark for easy location"
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Distance from Facility (km)
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={localFormData.distanceFromFacility || ""}
+                  onChange={(e) => handleLocalInputChange("distanceFromFacility", e.target.value)}
+                  onBlur={(e) => handleInputBlur("distanceFromFacility", e.target.value)}
+                  placeholder="Distance in kilometers"
+                  min="0"
+                  step="0.1"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Informer Information Section */}
+          <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
+            <h3
+              className="heading mb-4"
+              style={{
+                fontWeight: 700,
+                fontSize: "1.3rem",
+                color: "#0A400C",
+              }}
+            >
+              Informer Information
+            </h3>
+            <div className="row g-4">
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Informer Name
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.informerName || ""}
+                  onChange={(e) => handleLocalInputChange("informerName", e.target.value)}
+                  onBlur={(e) => handleInputBlur("informerName", e.target.value)}
+                  placeholder="Name of person who provided information"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Informer Mobile
+                </label>
+                <input
+                  type="tel"
+                  className="form-control"
+                  value={localFormData.informerMobile || ""}
+                  onChange={(e) => handleLocalInputChange("informerMobile", e.target.value)}
+                  onBlur={(e) => handleInputBlur("informerMobile", e.target.value)}
+                  placeholder="Informer's mobile number"
+                  maxLength="10"
+                  pattern="[0-9]{10}"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Relationship to Resident
+                </label>
+                <select
+                  className="form-select"
+                  value={localFormData.informerRelationship || ""}
+                  onChange={(e) => {
+                    handleLocalInputChange("informerRelationship", e.target.value);
+                    handleInputBlur("informerRelationship", e.target.value);
+                  }}
+                >
+                  <option value="">Select Relationship</option>
+                  <option value="Family Member">Family Member</option>
+                  <option value="Friend">Friend</option>
+                  <option value="Neighbor">Neighbor</option>
+                  <option value="Social Worker">Social Worker</option>
+                  <option value="Police">Police</option>
+                  <option value="Hospital Staff">Hospital Staff</option>
+                  <option value="Government Official">Government Official</option>
+                  <option value="NGO Worker">NGO Worker</option>
+                  <option value="Self">Self</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Information Date
+                </label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={formatDateForInput(localFormData.informationDate)}
+                  onChange={(e) => handleLocalInputChange("informationDate", e.target.value)}
+                  onBlur={(e) => handleInputBlur("informationDate", e.target.value)}
+                  max={new Date().toISOString().split("T")[0]}
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Informer Address
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.informerAddress || ""}
+                  onChange={(e) => handleLocalInputChange("informerAddress", e.target.value)}
+                  onBlur={(e) => handleInputBlur("informerAddress", e.target.value)}
+                  placeholder="Informer's address"
+                />
+              </div>
+              <div className="col-12">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Information Details
+                </label>
+                <textarea
+                  className="form-control"
+                  rows="3"
+                  value={localFormData.informationDetails || ""}
+                  onChange={(e) => handleLocalInputChange("informationDetails", e.target.value)}
+                  onBlur={(e) => handleInputBlur("informationDetails", e.target.value)}
+                  placeholder="Details about how and why this information was provided"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Transport & Organization Information Section */}
+          <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
+            <h3
+              className="heading mb-4"
+              style={{
+                fontWeight: 700,
+                fontSize: "1.3rem",
+                color: "#0A400C",
+              }}
+            >
+              Transport & Organization Information
+            </h3>
+            <div className="row g-4">
+              {/* Transport Details */}
+              <div className="col-12">
+                <h5 className="text-info mb-3">
+                  Transport Details
+                </h5>
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Vehicle Number
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.conveyanceVehicleNo || ""}
+                  onChange={(e) => handleLocalInputChange("conveyanceVehicleNo", e.target.value)}
+                  onBlur={(e) => handleInputBlur("conveyanceVehicleNo", e.target.value)}
+                  placeholder="Transport vehicle number"
+                  style={{ textTransform: 'uppercase' }}
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Driver Name
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.driverName || ""}
+                  onChange={(e) => handleLocalInputChange("driverName", e.target.value)}
+                  onBlur={(e) => handleInputBlur("driverName", e.target.value)}
+                  placeholder="Driver's full name"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Driver Mobile
+                </label>
+                <input
+                  type="tel"
+                  className="form-control"
+                  value={localFormData.driverMobile || ""}
+                  onChange={(e) => handleLocalInputChange("driverMobile", e.target.value)}
+                  onBlur={(e) => handleInputBlur("driverMobile", e.target.value)}
+                  placeholder="Driver's mobile number"
+                  maxLength="10"
+                  pattern="[0-9]{10}"
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Pick Up Place
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.pickUpPlace || ""}
+                  onChange={(e) => handleLocalInputChange("pickUpPlace", e.target.value)}
+                  onBlur={(e) => handleInputBlur("pickUpPlace", e.target.value)}
+                  placeholder="Location where resident was picked up"
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Pick Up Time
+                </label>
+                <input
+                  type="datetime-local"
+                  className="form-control"
+                  value={localFormData.pickUpTime ? new Date(localFormData.pickUpTime).toISOString().slice(0, 16) : ""}
+                  onChange={(e) => handleLocalInputChange("pickUpTime", e.target.value)}
+                  onBlur={(e) => handleInputBlur("pickUpTime", e.target.value)}
+                />
+              </div>
+
+              {/* Organization Details */}
+              <div className="col-12 mt-4">
+                <h5 className="text-success mb-3">
+                  Organization & Admission Details
+                </h5>
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Admitted By
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.admittedBy || ""}
+                  onChange={(e) => handleLocalInputChange("admittedBy", e.target.value)}
+                  onBlur={(e) => handleInputBlur("admittedBy", e.target.value)}
+                  placeholder="Name of admitting officer"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Data Entrant Name
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.entrantName || ""}
+                  onChange={(e) => handleLocalInputChange("entrantName", e.target.value)}
+                  onBlur={(e) => handleInputBlur("entrantName", e.target.value)}
+                  placeholder="Name of person who entered data"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Ward Assignment
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.ward || ""}
+                  onChange={(e) => handleLocalInputChange("ward", e.target.value)}
+                  onBlur={(e) => handleInputBlur("ward", e.target.value)}
+                  placeholder="Ward or room assignment"
+                />
+              </div>
+
+              {/* Financial & Documentation */}
+              <div className="col-12 mt-4">
+                <h5 className="text-warning mb-3">
+                  Financial & Documentation
+                </h5>
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Receipt Number
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.receiptNo || ""}
+                  onChange={(e) => handleLocalInputChange("receiptNo", e.target.value)}
+                  onBlur={(e) => handleInputBlur("receiptNo", e.target.value)}
+                  placeholder="Financial receipt number"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Letter Number
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.letterNo || ""}
+                  onChange={(e) => handleLocalInputChange("letterNo", e.target.value)}
+                  onBlur={(e) => handleInputBlur("letterNo", e.target.value)}
+                  placeholder="Official letter number"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Item Amount (₹)
+                </label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={localFormData.itemAmount || ""}
+                  onChange={(e) => handleLocalInputChange("itemAmount", e.target.value)}
+                  onBlur={(e) => handleInputBlur("itemAmount", e.target.value)}
+                  placeholder="Value of items/money"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <div className="col-md-8">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Item Description
+                </label>
+                <textarea
+                  className="form-control"
+                  rows="3"
+                  value={localFormData.itemDescription || ""}
+                  onChange={(e) => handleLocalInputChange("itemDescription", e.target.value)}
+                  onBlur={(e) => handleInputBlur("itemDescription", e.target.value)}
+                  placeholder="Detailed description of personal belongings, money, or items found with resident"
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Video Documentation
+                </label>
+                <input
+                  type="url"
+                  className="form-control"
+                  value={localFormData.videoUrl || ""}
+                  onChange={(e) => handleLocalInputChange("videoUrl", e.target.value)}
+                  onBlur={(e) => handleInputBlur("videoUrl", e.target.value)}
+                  placeholder="Link to video documentation"
+                />
+                <small className="text-muted">Link to any video documentation of admission</small>
+              </div>
+
+              {/* Additional Organization Fields */}
+              <div className="col-12 mt-4">
+                <h5 className="text-secondary mb-3">
+                  Additional Information
+                </h5>
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Organization ID
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.organizationId || ""}
+                  onChange={(e) => handleLocalInputChange("organizationId", e.target.value)}
+                  onBlur={(e) => handleInputBlur("organizationId", e.target.value)}
+                  placeholder="Internal organization ID"
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Admission Status
+                </label>
+                <select
+                  className="form-select"
+                  value={localFormData.admissionStatus || ""}
+                  onChange={(e) => {
+                    handleLocalInputChange("admissionStatus", e.target.value);
+                    handleInputBlur("admissionStatus", e.target.value);
+                  }}
+                >
+                  <option value="">Select Status</option>
+                  <option value="Active">Active</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Discharged">Discharged</option>
+                  <option value="Transferred">Transferred</option>
+                  <option value="On Leave">On Leave</option>
+                  <option value="Absconded">Absconded</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Comments Section */}
+          <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
+            <h3
+              className="heading mb-4"
+              style={{
+                fontWeight: 700,
+                fontSize: "1.3rem",
+                color: "#0A400C",
+              }}
+            >
+              Additional Comments & Notes
+            </h3>
+            <div className="row g-4">
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  General Comments
+                </label>
+                <textarea
+                  className="form-control"
+                  rows="4"
+                  value={localFormData.comments || ""}
+                  onChange={(e) => handleLocalInputChange("comments", e.target.value)}
+                  onBlur={(e) => handleInputBlur("comments", e.target.value)}
+                  placeholder="General notes, observations, or important information about the resident..."
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Medical Notes
+                </label>
+                <textarea
+                  className="form-control"
+                  rows="4"
+                  value={localFormData.medicalNotes || ""}
+                  onChange={(e) => handleLocalInputChange("medicalNotes", e.target.value)}
+                  onBlur={(e) => handleInputBlur("medicalNotes", e.target.value)}
+                  placeholder="Specific medical observations, treatment notes, or health concerns..."
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Behavioral Notes
+                </label>
+                <textarea
+                  className="form-control"
+                  rows="3"
+                  value={localFormData.behavioralNotes || ""}
+                  onChange={(e) => handleLocalInputChange("behavioralNotes", e.target.value)}
+                  onBlur={(e) => handleInputBlur("behavioralNotes", e.target.value)}
+                  placeholder="Behavioral patterns, social interactions, special needs..."
+                />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Care Instructions
+                </label>
+                <textarea
+                  className="form-control"
+                  rows="3"
+                  value={localFormData.careInstructions || ""}
+                  onChange={(e) => handleLocalInputChange("careInstructions", e.target.value)}
+                  onBlur={(e) => handleInputBlur("careInstructions", e.target.value)}
+                  placeholder="Special care instructions, restrictions, or precautions..."
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Priority Level
+                </label>
+                <select
+                  className="form-select"
+                  value={localFormData.priorityLevel || ""}
+                  onChange={(e) => {
+                    handleLocalInputChange("priorityLevel", e.target.value);
+                    handleInputBlur("priorityLevel", e.target.value);
+                  }}
+                >
+                  <option value="">Select Priority</option>
+                  <option value="Low">Low</option>
+                  <option value="Normal">Normal</option>
+                  <option value="High">High</option>
+                  <option value="Critical">Critical</option>
+                  <option value="Emergency">Emergency</option>
+                </select>
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Last Update Date
+                </label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={formatDateForInput(localFormData.lastUpdateDate) || new Date().toISOString().split("T")[0]}
+                  onChange={(e) => handleLocalInputChange("lastUpdateDate", e.target.value)}
+                  onBlur={(e) => handleInputBlur("lastUpdateDate", e.target.value)}
+                  max={new Date().toISOString().split("T")[0]}
+                />
+              </div>
+              <div className="col-md-4">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Updated By
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={localFormData.updatedBy || ""}
+                  onChange={(e) => handleLocalInputChange("updatedBy", e.target.value)}
+                  onBlur={(e) => handleInputBlur("updatedBy", e.target.value)}
+                  placeholder="Name of person making this update"
+                />
+              </div>
+              <div className="col-12">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Update Summary
+                </label>
+                <textarea
+                  className="form-control"
+                  rows="2"
+                  value={localFormData.updateSummary || ""}
+                  onChange={(e) => handleLocalInputChange("updateSummary", e.target.value)}
+                  onBlur={(e) => handleInputBlur("updateSummary", e.target.value)}
+                  placeholder="Brief summary of changes made in this update..."
+                />
               </div>
             </div>
           </div>
         </div>
+
+        {/* Action Buttons */}
+        <div className="p-5 rounded-3 jumbotron mt-0 shadow-sm bg-white">
+          <div className="d-flex justify-content-between align-items-center">
+            <div className="text-sm text-gray-600">
+              {changedFields.size > 0 ? (
+                <span className="text-blue-600">
+                  {changedFields.size} field{changedFields.size > 1 ? "s" : ""} will be updated
+                </span>
+              ) : (
+                <span>No changes detected</span>
+              )}
+            </div>
+            <div className="d-flex gap-3">
+              <button
+                type="button"
+                onClick={closeUpdateModal}
+                className="btn btn-secondary px-4"
+                disabled={updateLoading}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={updateResidentData}
+                disabled={updateLoading || changedFields.size === 0}
+                className={`btn px-4 ${changedFields.size === 0 ? 'btn-outline-secondary' : ''}`}
+                style={changedFields.size > 0 ? {
+                  backgroundColor: "#0A400C",
+                  color: "white",
+                  fontWeight: 600,
+                } : {}}
+              >
+                {updateLoading ? (
+                  <>
+                    <span
+                      className="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <Edit size={16} className="me-2" />
+                    {changedFields.size > 0 ? `Update ${changedFields.size} Field${changedFields.size > 1 ? "s" : ""}` : "No Changes to Save"}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
 
   // Resident Details Modal Component - UPDATED TO SHOW ALL FIELDS AND PHOTOS
   const ResidentDetailsModal = () => {
