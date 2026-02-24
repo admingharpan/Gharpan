@@ -1397,6 +1397,48 @@ router.get("/stats/enhanced", async (req, res) => {
   }
 });
 
+// GET /api/residents/stats/dashboard - Dashboard specific stats
+router.get("/stats/dashboard", async (req, res) => {
+  try {
+    const totalResidents = await Resident.countDocuments({ isActive: true });
+    
+    // Count successful rehabilitations based on rehabStatus (case-insensitive)
+    const successfulRehabs = await Resident.countDocuments({
+      isActive: true,
+      rehabStatus: {
+        $regex: /^(completed|successful|discharged|graduated|released|rehabilitated)$/i
+      }
+    });
+
+    // Count ongoing care programs (case-insensitive, including null/empty)
+    const ongoingCare = await Resident.countDocuments({
+      isActive: true,
+      $or: [
+        { rehabStatus: { $regex: /^(in progress|active|ongoing|under treatment|admitted)$/i } },
+        { rehabStatus: { $exists: false } },
+        { rehabStatus: "" },
+        { rehabStatus: null }
+      ]
+    });
+
+    res.json({
+      success: true,
+      data: {
+        totalResidents,
+        successfulRehabilitations: successfulRehabs,
+        ongoingCarePrograms: ongoingCare,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching dashboard statistics",
+      error: error.message,
+    });
+  }
+});
+
 // GET /api/residents/stats/summary
 router.get("/stats/summary", async (req, res) => {
   try {

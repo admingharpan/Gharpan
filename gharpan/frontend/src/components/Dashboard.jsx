@@ -26,70 +26,20 @@ const Dashboard = () => {
       setLoading(true);
       setError(null);
 
-      // Fetch total residents
-      const residentsResponse = await fetch(
-        "/api/residents"
+      // Fetch dashboard statistics from dedicated endpoint
+      const statsResponse = await fetch(
+        "/api/residents/stats/dashboard"
       );
-      const residentsData = await residentsResponse.json();
+      const statsData = await statsResponse.json();
 
-      if (residentsData.success) {
-        const totalResidents = residentsData.data
-          ? residentsData.data.length
-          : 0;
-
-        // Debug: Log rehabStatus values
-        console.log(
-          "Resident rehabStatus values:",
-          residentsData.data?.map((r) => ({
-            name: r.name,
-            rehabStatus: r.rehabStatus,
-          }))
-        );
-
-        // Calculate successful rehabilitations based on rehabStatus field (case-insensitive)
-        const successfulRehabs = residentsData.data
-          ? residentsData.data.filter((resident) => {
-              const status = (resident.rehabStatus || "").toLowerCase();
-              return (
-                status === "completed" ||
-                status === "successful" ||
-                status === "discharged" ||
-                status === "graduated" ||
-                status === "released" ||
-                status === "rehabilitated"
-              );
-            }).length
-          : 0;
-
-        // Calculate ongoing care programs based on rehabStatus field
-        // If rehabStatus is null/empty, consider them as ongoing (newly admitted)
-        const ongoingCare = residentsData.data
-          ? residentsData.data.filter((resident) => {
-              const status = (resident.rehabStatus || "").toLowerCase();
-              return (
-                status === "in progress" ||
-                status === "active" ||
-                status === "ongoing" ||
-                status === "under treatment" ||
-                status === "admitted" ||
-                !resident.rehabStatus || // No status means still ongoing/newly admitted
-                resident.rehabStatus === "" ||
-                status === "null"
-              );
-            }).length
-          : 0;
-
-        console.log("Statistics calculated:", {
-          totalResidents,
-          successfulRehabs,
-          ongoingCare,
-        });
-
+      if (statsData.success) {
         setStatistics({
-          totalResidents,
-          successfulRehabilitations: successfulRehabs,
-          ongoingCarePrograms: ongoingCare,
+          totalResidents: statsData.data.totalResidents,
+          successfulRehabilitations: statsData.data.successfulRehabilitations,
+          ongoingCarePrograms: statsData.data.ongoingCarePrograms,
         });
+
+        console.log("Statistics fetched from dashboard endpoint:", statsData.data);
       }
     } catch (error) {
       console.error("Error fetching statistics:", error);
