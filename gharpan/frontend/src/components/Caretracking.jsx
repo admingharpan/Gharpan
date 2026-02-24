@@ -50,7 +50,7 @@ const CareTracking = () => {
   const fetchResidents = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/residents");
+      const response = await fetch("/api/residents?limit=1000");
       if (response.ok) {
         const result = await response.json();
         const residentsData = result.success ? result.data : result;
