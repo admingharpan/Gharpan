@@ -784,6 +784,7 @@ const UpdateResidentModal = () => {
 
   // KEY FIX: Use local state to prevent parent re-renders on every keystroke
   const [localFormData, setLocalFormData] = useState(formData);
+  const [updateModalTab, setUpdateModalTab] = useState("edit"); // "edit" or "review"
 
   // Sync local state when modal opens
   useEffect(() => {
@@ -829,7 +830,7 @@ const UpdateResidentModal = () => {
       >
         {/* Modal Header */}
         <div className="bg-white p-6 border-b border-gray-200 rounded-t-lg shadow-sm flex-shrink-0">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center mb-4">
             <div>
               <h2 className="text-2xl font-bold text-gray-800">
                 Update Resident Information
@@ -851,6 +852,30 @@ const UpdateResidentModal = () => {
               type="button"
             >
               ×
+            </button>
+          </div>
+          
+          {/* Tabs */}
+          <div className="flex space-x-2 border-b border-gray-200">
+            <button
+              onClick={() => setUpdateModalTab("edit")}
+              className={`px-4 py-2 font-medium text-sm transition-colors ${
+                updateModalTab === "edit"
+                  ? "text-white bg-blue-600 border-b-2 border-blue-600 rounded-t"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Edit Fields
+            </button>
+            <button
+              onClick={() => setUpdateModalTab("review")}
+              className={`px-4 py-2 font-medium text-sm transition-colors ${
+                updateModalTab === "review"
+                  ? "text-white bg-blue-600 border-b-2 border-blue-600 rounded-t"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Review & Confirm
             </button>
           </div>
         </div>
@@ -886,6 +911,9 @@ const UpdateResidentModal = () => {
             </div>
           ) : null}
 
+          {/* EDIT TAB - Form Fields */}
+          {updateModalTab === "edit" && (
+            <div>
           {/* Basic Information Section */}
           <div className="p-5 rounded-3 jumbotron mt-0 shadow-sm bg-white">
             <h3
@@ -2218,6 +2246,145 @@ const UpdateResidentModal = () => {
               </div>
             </div>
           </div>
+            </div>
+          )}
+
+          {/* REVIEW TAB - Comprehensive Review Section */}
+          {updateModalTab === "review" && (
+            <div className="mt-4">
+              <h4 className="text-lg font-bold mb-4" style={{color: "#0A400C"}}>Review & Confirm All Changes</h4>
+              
+              <div className="alert alert-info mb-4" role="alert">
+                <strong>Please review all the information below.</strong> You can switch to the "Edit Fields" tab to make changes.
+              </div>
+
+              {/* Step 1: Basic Information */}
+              <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#0A400C"}}>
+                <h5 className="text-primary mb-4 fw-bold">📋 Basic Information</h5>
+                <div className="row g-3">
+                  <div className="col-md-6"><strong>Registration No.:</strong> <span className="text-muted">{localFormData.registrationNo || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Admission Date:</strong> <span className="text-muted">{localFormData.admissionDate ? new Date(localFormData.admissionDate).toLocaleDateString() : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Full Name:</strong> <span className="text-muted">{localFormData.name || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Name by Organization:</strong> <span className="text-muted">{localFormData.nameGivenByOrganization || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Date of Birth:</strong> <span className="text-muted">{localFormData.dateOfBirth ? new Date(localFormData.dateOfBirth).toLocaleDateString() : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Gender:</strong> <span className="text-muted">{localFormData.gender || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Age:</strong> <span className="text-muted">{localFormData.age ? `${localFormData.age} years` : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Weight:</strong> <span className="text-muted">{localFormData.weight ? `${localFormData.weight} kg` : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Height:</strong> <span className="text-muted">{localFormData.height ? `${localFormData.height} cm` : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Religion:</strong> <span className="text-muted">{localFormData.religion || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Identification Mark:</strong> <span className="text-muted">{localFormData.identificationMark || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Category:</strong> <span className="text-muted">{localFormData.category || "N/A"}</span></div>
+                </div>
+              </div>
+
+              {/* Step 2: Contact & Address Information */}
+              <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#2563eb"}}>
+                <h5 className="text-primary mb-4 fw-bold">📞 Contact & Address Information</h5>
+                <div className="row g-3">
+                  <div className="col-12"><strong>Full Address:</strong> <span className="text-muted">{localFormData.address?.fullAddress || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>City:</strong> <span className="text-muted">{localFormData.address?.city || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>District:</strong> <span className="text-muted">{localFormData.address?.district || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>State:</strong> <span className="text-muted">{localFormData.address?.state || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Country:</strong> <span className="text-muted">{localFormData.address?.country || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>PIN Code:</strong> <span className="text-muted">{localFormData.address?.pincode || "N/A"}</span></div>
+                  <div className="col-12"><strong>Alternative Address:</strong> <span className="text-muted">{localFormData.alternativeAddress || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Latitude:</strong> <span className="text-muted">{localFormData.address?.latitude || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Longitude:</strong> <span className="text-muted">{localFormData.address?.longitude || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Mobile Number:</strong> <span className="text-muted">{localFormData.mobileNo || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Phone Number:</strong> <span className="text-muted">{localFormData.phoneNumber || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Alternative Contact:</strong> <span className="text-muted">{localFormData.alternativeContact || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Email Address:</strong> <span className="text-muted">{localFormData.emailAddress || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Social Media Handle:</strong> <span className="text-muted">{localFormData.socialMediaHandle || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Voter ID:</strong> <span className="text-muted">{localFormData.voterId || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Aadhaar Number:</strong> <span className="text-muted">{localFormData.aadhaarNumber || "N/A"}</span></div>
+                </div>
+              </div>
+
+              {/* Guardian & Emergency Contact */}
+              <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#7c3aed"}}>
+                <h5 className="text-primary mb-4 fw-bold">👥 Guardian & Emergency Contact</h5>
+                <div className="row g-3">
+                  <div className="col-md-6"><strong>Guardian Name:</strong> <span className="text-muted">{localFormData.guardianName || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Relative Who Admitted:</strong> <span className="text-muted">{localFormData.relativeAdmit || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Relationship with Resident:</strong> <span className="text-muted">{localFormData.relationWith || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Emergency Contact Name:</strong> <span className="text-muted">{localFormData.emergencyContactName || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Emergency Contact Number:</strong> <span className="text-muted">{localFormData.emergencyContactNumber || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Emergency Contact Relationship:</strong> <span className="text-muted">{localFormData.emergencyContactRelationship || "N/A"}</span></div>
+                </div>
+              </div>
+
+              {/* Step 3: Health Information */}
+              <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#dc2626"}}>
+                <h5 className="text-primary mb-4 fw-bold">🏥 Health Information</h5>
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <strong>Health Status:</strong>
+                    <span className={`ms-2 badge ${localFormData.healthStatus?.toLowerCase().includes("good") ? "bg-success" : localFormData.healthStatus?.toLowerCase().includes("critical") ? "bg-danger" : "bg-warning"}`}>
+                      {localFormData.healthStatus || "N/A"}
+                    </span>
+                  </div>
+                  <div className="col-md-6"><strong>Blood Group:</strong> <span className="text-muted">{localFormData.bloodGroup || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Body Temperature:</strong> <span className="text-muted">{localFormData.bodyTemperature ? `${localFormData.bodyTemperature}°C` : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Heart Rate:</strong> <span className="text-muted">{localFormData.heartRate ? `${localFormData.heartRate} BPM` : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Respiratory Rate:</strong> <span className="text-muted">{localFormData.respiratoryRate ? `${localFormData.respiratoryRate}/min` : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Blood Pressure:</strong> <span className="text-muted">{localFormData.bloodPressure || "N/A"}</span></div>
+                  <div className="col-12"><strong>Allergies:</strong> <span className="text-muted">{localFormData.allergies || "N/A"}</span></div>
+                  <div className="col-12"><strong>Other Known Allergies:</strong> <span className="text-muted">{localFormData.knownAllergies || "N/A"}</span></div>
+                  <div className="col-12"><strong>Medical Conditions:</strong> <span className="text-muted">{localFormData.medicalConditions || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Disability Status:</strong> <span className="text-muted">{localFormData.disabilityStatus || "N/A"}</span></div>
+                  <div className="col-12"><strong>Disability Details:</strong> <span className="text-muted">{localFormData.disabilityDetails || "N/A"}</span></div>
+                  <div className="col-12"><strong>Current Medications:</strong> <span className="text-muted">{localFormData.medications || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Rehabilitation Status:</strong> <span className="text-muted">{localFormData.rehabStatus || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Primary Doctor:</strong> <span className="text-muted">{localFormData.primaryDoctor || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Preferred Hospital:</strong> <span className="text-muted">{localFormData.preferredHospital || "N/A"}</span></div>
+                  <div className="col-12"><strong>Medical History Notes:</strong> <span className="text-muted">{localFormData.medicalHistory || "N/A"}</span></div>
+                </div>
+              </div>
+
+              {/* Transport & Organization */}
+              <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#16a34a"}}>
+                <h5 className="text-primary mb-4 fw-bold">🚗 Transport & Organization</h5>
+                <div className="row g-3">
+                  <div className="col-md-6"><strong>Vehicle No.:</strong> <span className="text-muted">{localFormData.conveyanceVehicleNo || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Pick Up Place:</strong> <span className="text-muted">{localFormData.pickUpPlace || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Pick Up Time:</strong> <span className="text-muted">{localFormData.pickUpTime ? new Date(localFormData.pickUpTime).toLocaleString() : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Entrant Name:</strong> <span className="text-muted">{localFormData.entrantName || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Driver Name:</strong> <span className="text-muted">{localFormData.driverName || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Driver Mobile:</strong> <span className="text-muted">{localFormData.driverMobile || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Admitted By:</strong> <span className="text-muted">{localFormData.admittedBy || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Ward:</strong> <span className="text-muted">{localFormData.ward || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Organization ID:</strong> <span className="text-muted">{localFormData.organizationId || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Admission Status:</strong> <span className="text-muted">{localFormData.admissionStatus || "N/A"}</span></div>
+                </div>
+              </div>
+
+              {/* Financial & Documentation */}
+              <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#2563eb"}}>
+                <h5 className="text-primary mb-4 fw-bold">💰 Financial & Documentation</h5>
+                <div className="row g-3">
+                  <div className="col-md-6"><strong>Receipt No.:</strong> <span className="text-muted">{localFormData.receiptNo || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Letter No.:</strong> <span className="text-muted">{localFormData.letterNo || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Item Amount (₹):</strong> <span className="text-muted">{localFormData.itemAmount || "N/A"}</span></div>
+                  <div className="col-12"><strong>Item Description:</strong> <span className="text-muted">{localFormData.itemDescription || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Video URL:</strong> <span className="text-muted">{localFormData.videoUrl ? <a href={localFormData.videoUrl} target="_blank" rel="noopener noreferrer">{localFormData.videoUrl}</a> : "N/A"}</span></div>
+                </div>
+              </div>
+
+              {/* Comments & Notes */}
+              <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#7c3aed"}}>
+                <h5 className="text-primary mb-4 fw-bold">📝 Comments & Notes</h5>
+                <div className="row g-3">
+                  <div className="col-12"><strong>General Comments:</strong> <span className="text-muted">{localFormData.comments || "N/A"}</span></div>
+                  <div className="col-12"><strong>Medical Notes:</strong> <span className="text-muted">{localFormData.medicalNotes || "N/A"}</span></div>
+                  <div className="col-12"><strong>Behavioral Notes:</strong> <span className="text-muted">{localFormData.behavioralNotes || "N/A"}</span></div>
+                  <div className="col-12"><strong>Care Instructions:</strong> <span className="text-muted">{localFormData.careInstructions || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Priority Level:</strong> <span className="text-muted">{localFormData.priorityLevel || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Updated By:</strong> <span className="text-muted">{localFormData.updatedBy || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Last Update Date:</strong> <span className="text-muted">{localFormData.lastUpdateDate ? new Date(localFormData.lastUpdateDate).toLocaleDateString() : "N/A"}</span></div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
