@@ -211,7 +211,7 @@ function Login({ onLoginSuccess }) {
             )}
 
             {/* Form */}
-            <div className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {/* Admin ID */}
               <div>
                 <label
@@ -275,13 +275,12 @@ function Login({ onLoginSuccess }) {
 
               {/* Login Button */}
               <button
-                type="button"
-                onClick={handleSubmit}
+                type="submit"
                 className="w-full bg-green-700 hover:bg-green-600 text-white py-3 px-4 rounded-lg font-semibold focus:outline-none transform hover:scale-105 transition-all duration-200"
               >
                 Sign In
               </button>
-            </div>
+            </form>
 
             {/* Footer Info */}
             <div className="mt-8 text-center">
