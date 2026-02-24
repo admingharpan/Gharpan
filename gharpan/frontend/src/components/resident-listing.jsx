@@ -2443,7 +2443,7 @@ const UpdateResidentModal = () => {
   );
 };
 
-  // Resident Details Modal Component - UPDATED TO SHOW ALL FIELDS AND PHOTOS
+  // Resident Details Modal Component - SHOWS ALL FIELDS WITH N/A FOR EMPTY
   const ResidentDetailsModal = () => {
     if (!selectedResident) return null;
 
@@ -2575,487 +2575,155 @@ const UpdateResidentModal = () => {
           </div>
 
           <div className="p-6">
-            {/* Basic Information */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-4 text-blue-800 border-b pb-2">
-                Basic Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                  <strong>Registration No:</strong>{" "}
-                  {selectedResident.registrationNo || "N/A"}
-                </div>
-                <div>
-                  <strong>Admission Date:</strong>{" "}
-                  {formatDate(selectedResident.admissionDate)}
-                </div>
-                <div>
-                  <strong>Name:</strong> {selectedResident.name || "N/A"}
-                </div>
-                <div>
-                  <strong>Organization Name:</strong>{" "}
-                  {selectedResident.nameGivenByOrganization || "N/A"}
-                </div>
-                <div>
-                  <strong>Date of Birth:</strong>{" "}
-                  {formatDate(selectedResident.dateOfBirth)}
-                </div>
-                <div>
-                  <strong>Gender:</strong> {selectedResident.gender || "N/A"}
-                </div>
-                <div>
-                  <strong>Age:</strong> {selectedResident.age || "N/A"} years
-                </div>
-                <div>
-                  <strong>Weight:</strong> {selectedResident.weight || "N/A"} kg
-                </div>
-                <div>
-                  <strong>Height:</strong> {selectedResident.height || "N/A"} cm
-                </div>
-                <div>
-                  <strong>Religion:</strong> {selectedResident.religion || "N/A"}
-                </div>
-                <div>
-                  <strong>Identification Mark:</strong>{" "}
-                  {selectedResident.identificationMark || "N/A"}
-                </div>
-                <div>
-                  <strong>Category:</strong> {selectedResident.category || "N/A"}
-                </div>
+            {/* Step 1: Basic Information */}
+            <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#0A400C"}}>
+              <h5 className="text-primary mb-4 fw-bold">📋 Basic Information</h5>
+              <div className="row g-3">
+                <div className="col-md-6"><strong>Registration No.:</strong> <span className="text-muted">{selectedResident.registrationNo || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Admission Date:</strong> <span className="text-muted">{formatDate(selectedResident.admissionDate)}</span></div>
+                <div className="col-md-6"><strong>Full Name:</strong> <span className="text-muted">{selectedResident.name || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Name by Organization:</strong> <span className="text-muted">{selectedResident.nameGivenByOrganization || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Date of Birth:</strong> <span className="text-muted">{formatDate(selectedResident.dateOfBirth)}</span></div>
+                <div className="col-md-6"><strong>Gender:</strong> <span className="text-muted">{selectedResident.gender || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Age:</strong> <span className="text-muted">{selectedResident.age ? `${selectedResident.age} years` : "N/A"}</span></div>
+                <div className="col-md-6"><strong>Weight:</strong> <span className="text-muted">{selectedResident.weight ? `${selectedResident.weight} kg` : "N/A"}</span></div>
+                <div className="col-md-6"><strong>Height:</strong> <span className="text-muted">{selectedResident.height ? `${selectedResident.height} cm` : "N/A"}</span></div>
+                <div className="col-md-6"><strong>Religion:</strong> <span className="text-muted">{selectedResident.religion || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Identification Mark:</strong> <span className="text-muted">{selectedResident.identificationMark || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Category:</strong> <span className="text-muted">{selectedResident.category || "N/A"}</span></div>
               </div>
             </div>
 
-            {/* Contact Information */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-4 text-green-800 border-b pb-2">
-                Contact & Address Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <strong>Full Address:</strong>{" "}
-                  {formatAddress(selectedResident.address)}
-                </div>
-                <div>
-                  <strong>Mobile No:</strong> {selectedResident.mobileNo || "N/A"}
-                </div>
-                <div>
-                  <strong>Phone Number:</strong> {selectedResident.phoneNumber || "N/A"}
-                </div>
-                <div>
-                  <strong>Alternative Contact:</strong> {selectedResident.alternativeContact || "N/A"}
-                </div>
-                <div>
-                  <strong>Email:</strong> {selectedResident.emailAddress || "N/A"}
-                </div>
-                <div>
-                  <strong>Social Media Handle:</strong> {selectedResident.socialMediaHandle || "N/A"}
-                </div>
-                <div>
-                  <strong>Voter ID:</strong> {selectedResident.voterId || "N/A"}
-                </div>
-                <div>
-                  <strong>Aadhaar Number:</strong> {selectedResident.aadhaarNumber || "N/A"}
-                </div>
-                <div>
-                  <strong>Address - City:</strong> {selectedResident.address?.city || "N/A"}
-                </div>
-                <div>
-                  <strong>Address - District:</strong> {selectedResident.address?.district || "N/A"}
-                </div>
-                <div>
-                  <strong>Address - State:</strong> {selectedResident.address?.state || "N/A"}
-                </div>
-                <div>
-                  <strong>Address - PIN Code:</strong> {selectedResident.address?.pincode || "N/A"}
-                </div>
-                <div>
-                  <strong>Address - Country:</strong> {selectedResident.address?.country || "N/A"}
-                </div>
-                <div>
-                  <strong>Nearest Landmark:</strong> {selectedResident.nearestLandmark || "N/A"}
-                </div>
-                <div>
-                  <strong>Distance from Facility (km):</strong> {selectedResident.distanceFromFacility || "N/A"}
-                </div>
-              </div>
-              {selectedResident.alternativeAddress && (
-                <div className="mt-4">
-                  <strong>Alternative Address:</strong>
-                  <p className="mt-1 text-gray-700">{selectedResident.alternativeAddress}</p>
-                </div>
-              )}
-            </div>
-
-            {/* Guardian & Family Information */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-4 text-purple-800 border-b pb-2">
-                Guardian & Family Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <strong>Guardian Name:</strong> {selectedResident.guardianName || "N/A"}
-                </div>
-                <div>
-                  <strong>Relative Who Admitted:</strong>{" "}
-                  {selectedResident.relativeAdmit || "N/A"}
-                </div>
-                <div>
-                  <strong>Relationship:</strong>{" "}
-                  {selectedResident.relationWith || "N/A"}
-                </div>
+            {/* Step 2: Contact & Address Information */}
+            <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#2563eb"}}>
+              <h5 className="text-primary mb-4 fw-bold">📞 Contact & Address Information</h5>
+              <div className="row g-3">
+                <div className="col-12"><strong>Full Address:</strong> <span className="text-muted">{selectedResident.address?.fullAddress || "N/A"}</span></div>
+                <div className="col-md-6"><strong>City:</strong> <span className="text-muted">{selectedResident.address?.city || "N/A"}</span></div>
+                <div className="col-md-6"><strong>District:</strong> <span className="text-muted">{selectedResident.address?.district || "N/A"}</span></div>
+                <div className="col-md-6"><strong>State:</strong> <span className="text-muted">{selectedResident.address?.state || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Country:</strong> <span className="text-muted">{selectedResident.address?.country || "N/A"}</span></div>
+                <div className="col-md-6"><strong>PIN Code:</strong> <span className="text-muted">{selectedResident.address?.pincode || "N/A"}</span></div>
+                <div className="col-12"><strong>Alternative Address:</strong> <span className="text-muted">{selectedResident.alternativeAddress || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Nearest Landmark:</strong> <span className="text-muted">{selectedResident.nearestLandmark || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Distance from Facility (km):</strong> <span className="text-muted">{selectedResident.distanceFromFacility || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Latitude:</strong> <span className="text-muted">{selectedResident.address?.latitude || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Longitude:</strong> <span className="text-muted">{selectedResident.address?.longitude || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Mobile Number:</strong> <span className="text-muted">{selectedResident.mobileNo || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Phone Number:</strong> <span className="text-muted">{selectedResident.phoneNumber || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Alternative Contact:</strong> <span className="text-muted">{selectedResident.alternativeContact || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Email Address:</strong> <span className="text-muted">{selectedResident.emailAddress || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Social Media Handle:</strong> <span className="text-muted">{selectedResident.socialMediaHandle || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Voter ID:</strong> <span className="text-muted">{selectedResident.voterId || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Aadhaar Number:</strong> <span className="text-muted">{selectedResident.aadhaarNumber || "N/A"}</span></div>
               </div>
             </div>
 
-            {/* Emergency Contact */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-4 text-red-800 border-b pb-2">
-                Emergency Contact
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <strong>Emergency Contact Name:</strong>{" "}
-                  {selectedResident.emergencyContactName || "N/A"}
-                </div>
-                <div>
-                  <strong>Emergency Contact Number:</strong>{" "}
-                  {selectedResident.emergencyContactNumber || "N/A"}
-                </div>
-                <div>
-                  <strong>Relationship:</strong>{" "}
-                  {selectedResident.emergencyContactRelationship || "N/A"}
-                </div>
+            {/* Guardian & Emergency Contact */}
+            <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#7c3aed"}}>
+              <h5 className="text-primary mb-4 fw-bold">👥 Guardian & Emergency Contact</h5>
+              <div className="row g-3">
+                <div className="col-md-6"><strong>Guardian Name:</strong> <span className="text-muted">{selectedResident.guardianName || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Relative Who Admitted:</strong> <span className="text-muted">{selectedResident.relativeAdmit || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Relationship with Resident:</strong> <span className="text-muted">{selectedResident.relationWith || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Emergency Contact Name:</strong> <span className="text-muted">{selectedResident.emergencyContactName || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Emergency Contact Number:</strong> <span className="text-muted">{selectedResident.emergencyContactNumber || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Emergency Contact Relationship:</strong> <span className="text-muted">{selectedResident.emergencyContactRelationship || "N/A"}</span></div>
               </div>
             </div>
 
-            {/* Health Information */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-4 text-red-800 border-b pb-2">
-                Health Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+            {/* Step 3: Health Information */}
+            <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#dc2626"}}>
+              <h5 className="text-primary mb-4 fw-bold">🏥 Health Information</h5>
+              <div className="row g-3">
+                <div className="col-md-6">
                   <strong>Health Status:</strong>
-                  <span
-                    className={`ml-2 px-2 py-1 rounded text-sm ${selectedResident.healthStatus
-                      ?.toLowerCase()
-                      .includes("good")
-                      ? "bg-green-100 text-green-800"
-                      : selectedResident.healthStatus
-                        ?.toLowerCase()
-                        .includes("critical")
-                        ? "bg-red-100 text-red-800"
-                        : "bg-yellow-100 text-yellow-800"
-                      }`}
-                  >
+                  <span className={`ms-2 badge ${selectedResident.healthStatus?.toLowerCase().includes("good") ? "bg-success" : selectedResident.healthStatus?.toLowerCase().includes("critical") ? "bg-danger" : "bg-warning"}`}>
                     {selectedResident.healthStatus || "N/A"}
                   </span>
                 </div>
-                <div>
-                  <strong>Blood Group:</strong>{" "}
-                  {selectedResident.bloodGroup || "N/A"}
-                </div>
-                <div>
-                  <strong>Disability Status:</strong>{" "}
-                  {selectedResident.disabilityStatus || "None"}
-                </div>
-                <div>
-                  <strong>Rehabilitation Status:</strong>{" "}
-                  {selectedResident.rehabStatus || "N/A"}
-                </div>
-              </div>
-
-              {/* Vital Signs */}
-              {(selectedResident.bodyTemperature || selectedResident.heartRate || selectedResident.respiratoryRate || selectedResident.bloodPressure) && (
-                <div className="mt-4">
-                  <h4 className="text-md font-semibold mb-2 text-blue-700">Vital Signs</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <strong>Body Temperature:</strong> {selectedResident.bodyTemperature ? `${selectedResident.bodyTemperature}°C` : "N/A"}
-                    </div>
-                    <div>
-                      <strong>Heart Rate:</strong> {selectedResident.heartRate ? `${selectedResident.heartRate} BPM` : "N/A"}
-                    </div>
-                    <div>
-                      <strong>Respiratory Rate:</strong> {selectedResident.respiratoryRate ? `${selectedResident.respiratoryRate}/min` : "N/A"}
-                    </div>
-                    <div>
-                      <strong>Blood Pressure:</strong> {selectedResident.bloodPressure || "N/A"}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Medical Details */}
-              <div className="mt-4 grid grid-cols-1 gap-4">
-                {selectedResident.allergies && (
-                  <div>
-                    <strong>Known Allergies:</strong>
-                    <p className="mt-1 text-gray-700">{selectedResident.allergies}</p>
-                  </div>
-                )}
-                {selectedResident.knownAllergies && (
-                  <div>
-                    <strong>Additional Allergies:</strong>
-                    <p className="mt-1 text-gray-700">{selectedResident.knownAllergies}</p>
-                  </div>
-                )}
-                {selectedResident.medicalConditions && (
-                  <div>
-                    <strong>Medical Conditions:</strong>
-                    <p className="mt-1 text-gray-700">{selectedResident.medicalConditions}</p>
-                  </div>
-                )}
-                {selectedResident.medications && (
-                  <div>
-                    <strong>Current Medications:</strong>
-                    <p className="mt-1 text-gray-700">{selectedResident.medications}</p>
-                  </div>
-                )}
-                {selectedResident.disabilityDetails && (
-                  <div>
-                    <strong>Disability Details:</strong>
-                    <p className="mt-1 text-gray-700">{selectedResident.disabilityDetails}</p>
-                  </div>
-                )}
-                {selectedResident.medicalHistoryNotes && (
-                  <div>
-                    <strong>Medical History Notes:</strong>
-                    <p className="mt-1 text-gray-700">{selectedResident.medicalHistoryNotes}</p>
-                  </div>
-                )}
-                {selectedResident.medicalHistory && (
-                  <div>
-                    <strong>Medical History:</strong>
-                    <p className="mt-1 text-gray-700">{selectedResident.medicalHistory}</p>
-                  </div>
-                )}
-                {selectedResident.primaryDoctor && (
-                  <div>
-                    <strong>Primary Doctor:</strong> {selectedResident.primaryDoctor}
-                  </div>
-                )}
-                {selectedResident.preferredHospital && (
-                  <div>
-                    <strong>Preferred Hospital:</strong> {selectedResident.preferredHospital}
-                  </div>
-                )}
+                <div className="col-md-6"><strong>Blood Group:</strong> <span className="text-muted">{selectedResident.bloodGroup || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Body Temperature:</strong> <span className="text-muted">{selectedResident.bodyTemperature ? `${selectedResident.bodyTemperature}°C` : "N/A"}</span></div>
+                <div className="col-md-6"><strong>Heart Rate:</strong> <span className="text-muted">{selectedResident.heartRate ? `${selectedResident.heartRate} BPM` : "N/A"}</span></div>
+                <div className="col-md-6"><strong>Respiratory Rate:</strong> <span className="text-muted">{selectedResident.respiratoryRate ? `${selectedResident.respiratoryRate}/min` : "N/A"}</span></div>
+                <div className="col-md-6"><strong>Blood Pressure:</strong> <span className="text-muted">{selectedResident.bloodPressure || "N/A"}</span></div>
+                <div className="col-12"><strong>Allergies:</strong> <span className="text-muted">{selectedResident.allergies || "N/A"}</span></div>
+                <div className="col-12"><strong>Other Known Allergies:</strong> <span className="text-muted">{selectedResident.knownAllergies || "N/A"}</span></div>
+                <div className="col-12"><strong>Medical Conditions:</strong> <span className="text-muted">{selectedResident.medicalConditions || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Disability Status:</strong> <span className="text-muted">{selectedResident.disabilityStatus || "N/A"}</span></div>
+                <div className="col-12"><strong>Disability Details:</strong> <span className="text-muted">{selectedResident.disabilityDetails || "N/A"}</span></div>
+                <div className="col-12"><strong>Current Medications:</strong> <span className="text-muted">{selectedResident.medications || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Rehabilitation Status:</strong> <span className="text-muted">{selectedResident.rehabStatus || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Primary Doctor:</strong> <span className="text-muted">{selectedResident.primaryDoctor || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Preferred Hospital:</strong> <span className="text-muted">{selectedResident.preferredHospital || "N/A"}</span></div>
+                <div className="col-12"><strong>Medical History Notes:</strong> <span className="text-muted">{selectedResident.medicalHistoryNotes || "N/A"}</span></div>
+                <div className="col-12"><strong>Medical History:</strong> <span className="text-muted">{selectedResident.medicalHistory || "N/A"}</span></div>
               </div>
             </div>
 
             {/* Informer Information */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-4 text-orange-800 border-b pb-2">
-                Informer Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <strong>Informer Name:</strong>{" "}
-                  {selectedResident.informerName || "N/A"}
-                </div>
-                <div>
-                  <strong>Informer Mobile:</strong>{" "}
-                  {selectedResident.informerMobile || "N/A"}
-                </div>
-                <div>
-                  <strong>Informer Relationship:</strong>{" "}
-                  {selectedResident.informerRelationship || "N/A"}
-                </div>
-                <div>
-                  <strong>Information Date:</strong>{" "}
-                  {formatDate(selectedResident.informationDate)}
-                </div>
-                <div>
-                  <strong>Informer Address:</strong>{" "}
-                  {selectedResident.informerAddress || "N/A"}
-                </div>
+            <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#ea580c"}}>
+              <h5 className="text-primary mb-4 fw-bold">ℹ️ Informer Information</h5>
+              <div className="row g-3">
+                <div className="col-md-6"><strong>Informer Name:</strong> <span className="text-muted">{selectedResident.informerName || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Informer Mobile:</strong> <span className="text-muted">{selectedResident.informerMobile || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Informer Relationship:</strong> <span className="text-muted">{selectedResident.informerRelationship || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Information Date:</strong> <span className="text-muted">{formatDate(selectedResident.informationDate)}</span></div>
+                <div className="col-12"><strong>Informer Address:</strong> <span className="text-muted">{selectedResident.informerAddress || "N/A"}</span></div>
+                <div className="col-12"><strong>Information Details:</strong> <span className="text-muted">{selectedResident.informationDetails || "N/A"}</span></div>
               </div>
-              {selectedResident.informationDetails && (
-                <div className="mt-4">
-                  <strong>Information Details:</strong>
-                  <p className="mt-1 text-gray-700">{selectedResident.informationDetails}</p>
-                </div>
-              )}
             </div>
 
-            {/* Transport & Organization */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-4 text-purple-800 border-b pb-2">
-                Transport & Organization
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <strong>Vehicle No:</strong>{" "}
-                  {selectedResident.conveyanceVehicleNo || "N/A"}
-                </div>
-                <div>
-                  <strong>Pick Up Place:</strong>{" "}
-                  {selectedResident.pickUpPlace || "N/A"}
-                </div>
-                <div>
-                  <strong>Pick Up Time:</strong>{" "}
-                  {selectedResident.pickUpTime ? new Date(selectedResident.pickUpTime).toLocaleString("en-IN") : "N/A"}
-                </div>
-                <div>
-                  <strong>Transport Time:</strong>{" "}
-                  {selectedResident.transportTime ? new Date(selectedResident.transportTime).toLocaleString("en-IN") : "N/A"}
-                </div>
-                <div>
-                  <strong>Driver Name:</strong>{" "}
-                  {selectedResident.driverName || "N/A"}
-                </div>
-                <div>
-                  <strong>Driver Mobile:</strong>{" "}
-                  {selectedResident.driverMobile || "N/A"}
-                </div>
-                <div>
-                  <strong>Entrant Name:</strong>{" "}
-                  {selectedResident.entrantName || "N/A"}
-                </div>
-                <div>
-                  <strong>Admitted By:</strong>{" "}
-                  {selectedResident.admittedBy || "N/A"}
-                </div>
-                <div>
-                  <strong>Ward:</strong> {selectedResident.ward || "N/A"}
-                </div>
-                <div>
-                  <strong>Organization ID:</strong>{" "}
-                  {selectedResident.organizationId || "N/A"}
-                </div>
-                <div>
-                  <strong>Admission Status:</strong>{" "}
-                  <span className={`px-2 py-1 rounded text-sm ${selectedResident.admissionStatus === "Active" ? "bg-green-100 text-green-800" :
-                    selectedResident.admissionStatus === "Discharged" ? "bg-gray-100 text-gray-800" :
-                      "bg-yellow-100 text-yellow-800"
-                    }`}>
-                    {selectedResident.admissionStatus || "N/A"}
-                  </span>
-                </div>
+            {/* Step 4: Transport & Organization */}
+            <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#16a34a"}}>
+              <h5 className="text-primary mb-4 fw-bold">🚗 Transport & Organization</h5>
+              <div className="row g-3">
+                <div className="col-md-6"><strong>Vehicle No.:</strong> <span className="text-muted">{selectedResident.conveyanceVehicleNo || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Pick Up Place:</strong> <span className="text-muted">{selectedResident.pickUpPlace || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Pick Up Time:</strong> <span className="text-muted">{selectedResident.pickUpTime ? new Date(selectedResident.pickUpTime).toLocaleString() : "N/A"}</span></div>
+                <div className="col-md-6"><strong>Transport Time:</strong> <span className="text-muted">{selectedResident.transportTime ? new Date(selectedResident.transportTime).toLocaleString() : "N/A"}</span></div>
+                <div className="col-md-6"><strong>Entrant Name:</strong> <span className="text-muted">{selectedResident.entrantName || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Driver Name:</strong> <span className="text-muted">{selectedResident.driverName || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Driver Mobile:</strong> <span className="text-muted">{selectedResident.driverMobile || "N/A"}</span></div>
+                <div className="col-12"><strong>Transport Notes:</strong> <span className="text-muted">{selectedResident.transportNotes || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Admitted By:</strong> <span className="text-muted">{selectedResident.admittedBy || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Ward:</strong> <span className="text-muted">{selectedResident.ward || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Organization ID:</strong> <span className="text-muted">{selectedResident.organizationId || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Admission Status:</strong> <span className="text-muted">{selectedResident.admissionStatus || "N/A"}</span></div>
               </div>
-              {selectedResident.transportNotes && (
-                <div className="mt-4">
-                  <strong>Transport Notes:</strong>
-                  <p className="mt-1 text-gray-700">{selectedResident.transportNotes}</p>
-                </div>
-              )}
             </div>
 
             {/* Financial & Documentation */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-4 text-yellow-800 border-b pb-2">
-                Financial & Documentation
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <strong>Receipt No:</strong>{" "}
-                  {selectedResident.receiptNo || "N/A"}
-                </div>
-                <div>
-                  <strong>Letter No:</strong>{" "}
-                  {selectedResident.letterNo || "N/A"}
-                </div>
-                <div>
-                  <strong>Item Amount:</strong> ₹{selectedResident.itemAmount || 0}
-                </div>
-                <div>
-                  <strong>Video URL:</strong>
-                  {selectedResident.videoUrl ? (
-                    <a
-                      href={selectedResident.videoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline ml-1"
-                    >
-                      View Video
-                    </a>
-                  ) : (
-                    " N/A"
-                  )}
-                </div>
+            <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#2563eb"}}>
+              <h5 className="text-primary mb-4 fw-bold">💰 Financial & Documentation</h5>
+              <div className="row g-3">
+                <div className="col-md-6"><strong>Receipt No.:</strong> <span className="text-muted">{selectedResident.receiptNo || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Letter No.:</strong> <span className="text-muted">{selectedResident.letterNo || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Item Amount (₹):</strong> <span className="text-muted">{selectedResident.itemAmount || "N/A"}</span></div>
+                <div className="col-12"><strong>Item Description:</strong> <span className="text-muted">{selectedResident.itemDescription || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Video URL:</strong> <span className="text-muted">{selectedResident.videoUrl ? <a href={selectedResident.videoUrl} target="_blank" rel="noopener noreferrer">{selectedResident.videoUrl}</a> : "N/A"}</span></div>
               </div>
-              {selectedResident.itemDescription && (
-                <div className="mt-4">
-                  <strong>Item Description:</strong>
-                  <p className="mt-1 text-gray-700">{selectedResident.itemDescription}</p>
-                </div>
-              )}
             </div>
 
             {/* Comments & Notes */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-4 text-indigo-800 border-b pb-2">
-                Comments & Notes
-              </h3>
-              <div className="grid grid-cols-1 gap-4">
-                {selectedResident.comments && (
-                  <div>
-                    <strong>General Comments:</strong>
-                    <p className="mt-1 text-gray-700">{selectedResident.comments}</p>
-                  </div>
-                )}
-                {selectedResident.generalComments && (
-                  <div>
-                    <strong>Additional Comments:</strong>
-                    <p className="mt-1 text-gray-700">{selectedResident.generalComments}</p>
-                  </div>
-                )}
-                {selectedResident.medicalNotes && (
-                  <div>
-                    <strong>Medical Notes:</strong>
-                    <p className="mt-1 text-gray-700">{selectedResident.medicalNotes}</p>
-                  </div>
-                )}
-                {selectedResident.behavioralNotes && (
-                  <div>
-                    <strong>Behavioral Notes:</strong>
-                    <p className="mt-1 text-gray-700">{selectedResident.behavioralNotes}</p>
-                  </div>
-                )}
-                {selectedResident.careInstructions && (
-                  <div>
-                    <strong>Care Instructions:</strong>
-                    <p className="mt-1 text-gray-700">{selectedResident.careInstructions}</p>
-                  </div>
-                )}
-                {selectedResident.priorityLevel && (
-                  <div>
-                    <strong>Priority Level:</strong>
-                    <span className={`ml-2 px-2 py-1 rounded text-sm ${selectedResident.priorityLevel === "Critical" || selectedResident.priorityLevel === "Emergency"
-                      ? "bg-red-100 text-red-800"
-                      : selectedResident.priorityLevel === "High"
-                        ? "bg-orange-100 text-orange-800"
-                        : selectedResident.priorityLevel === "Low"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}>
-                      {selectedResident.priorityLevel}
-                    </span>
-                  </div>
-                )}
-                {selectedResident.updateSummary && (
-                  <div>
-                    <strong>Last Update Summary:</strong>
-                    <p className="mt-1 text-gray-700">{selectedResident.updateSummary}</p>
-                  </div>
-                )}
-                {selectedResident.updatedBy && (
-                  <div>
-                    <strong>Updated By:</strong> {selectedResident.updatedBy}
-                  </div>
-                )}
-                {selectedResident.lastUpdateDate && (
-                  <div>
-                    <strong>Last Update Date:</strong> {formatDate(selectedResident.lastUpdateDate)}
-                  </div>
-                )}
+            <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#7c3aed"}}>
+              <h5 className="text-primary mb-4 fw-bold">📝 Comments & Notes</h5>
+              <div className="row g-3">
+                <div className="col-12"><strong>General Comments:</strong> <span className="text-muted">{selectedResident.comments || "N/A"}</span></div>
+                <div className="col-12"><strong>Additional Comments:</strong> <span className="text-muted">{selectedResident.generalComments || "N/A"}</span></div>
+                <div className="col-12"><strong>Medical Notes:</strong> <span className="text-muted">{selectedResident.medicalNotes || "N/A"}</span></div>
+                <div className="col-12"><strong>Behavioral Notes:</strong> <span className="text-muted">{selectedResident.behavioralNotes || "N/A"}</span></div>
+                <div className="col-12"><strong>Care Instructions:</strong> <span className="text-muted">{selectedResident.careInstructions || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Priority Level:</strong> <span className="text-muted">{selectedResident.priorityLevel || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Updated By:</strong> <span className="text-muted">{selectedResident.updatedBy || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Last Update Date:</strong> <span className="text-muted">{formatDate(selectedResident.lastUpdateDate)}</span></div>
+                <div className="col-12"><strong>Update Summary:</strong> <span className="text-muted">{selectedResident.updateSummary || "N/A"}</span></div>
               </div>
             </div>
 
             {/* Documents */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-4 text-indigo-800 border-b pb-2">
-                Documents
-              </h3>
+            <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#059669"}}>
+              <h5 className="text-primary mb-4 fw-bold">📄 Documents</h5>
               {selectedResident.documentIds && selectedResident.documentIds.length > 0 ? (
                 <ul className="list-disc pl-5">
                   {selectedResident.documentIds.map((doc) => (
@@ -3072,7 +2740,7 @@ const UpdateResidentModal = () => {
                   ))}
                 </ul>
               ) : (
-                <p className="text-gray-600">No documents available.</p>
+                <p className="text-muted">No documents uploaded</p>
               )}
             </div>
 
@@ -3080,7 +2748,7 @@ const UpdateResidentModal = () => {
             {selectedResident.careEvents && selectedResident.careEvents.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-lg font-semibold mb-4 text-pink-800 border-b pb-2">
-                  Care Events History
+                  Care Events History (Latest 5)
                 </h3>
                 <div className="space-y-4">
                   {selectedResident.careEvents.slice(0, 5).map((event, index) => (
@@ -3099,51 +2767,14 @@ const UpdateResidentModal = () => {
                           </span>
                         )}
                       </div>
-                      <p className="text-gray-700 mb-2">{event.description}</p>
-                      {event.doctor && (
-                        <p className="text-sm text-gray-600"><strong>Doctor:</strong> {event.doctor}</p>
-                      )}
-                      {event.medications && (
-                        <p className="text-sm text-gray-600"><strong>Medications:</strong> {event.medications}</p>
-                      )}
-                      {event.nextVisit && (
-                        <p className="text-sm text-gray-600"><strong>Next Visit:</strong> {formatDate(event.nextVisit)}</p>
-                      )}
-                      {event.remarks && (
-                        <p className="text-sm text-gray-600"><strong>Remarks:</strong> {event.remarks}</p>
+                      {event.description && (
+                        <p className="text-sm text-gray-700">{event.description}</p>
                       )}
                     </div>
                   ))}
-                  {selectedResident.careEvents.length > 5 && (
-                    <p className="text-sm text-gray-600 italic">
-                      ... and {selectedResident.careEvents.length - 5} more care events
-                    </p>
-                  )}
                 </div>
               </div>
             )}
-
-            {/* System Information */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">
-                System Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <strong>Created At:</strong> {formatDate(selectedResident.createdAt)}
-                </div>
-                <div>
-                  <strong>Last Updated:</strong> {formatDate(selectedResident.updatedAt)}
-                </div>
-                <div>
-                  <strong>Active Status:</strong>
-                  <span className={`ml-2 px-2 py-1 rounded text-sm ${selectedResident.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                    }`}>
-                    {selectedResident.isActive ? "Active" : "Inactive"}
-                  </span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
