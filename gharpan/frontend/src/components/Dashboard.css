@@ -19,6 +19,7 @@
   border-radius: 1rem;
   background: #ffffff; /* Keep cards white for clarity */
   animation: slideUp 0.6s ease-in-out forwards;
+  min-height: 140px;
 }
 
 .dashboard-card:hover {
@@ -29,18 +30,18 @@
 .dashboard-title {
   color: var(--brand-color);
   font-weight: 600;
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 .dashboard-count {
   color: var(--brand-color);
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 700;
 }
 
 /* --- Dashboard Logo --- */
 .dashboard-logo {
-  width: 220px;
+  width: 120px;
   height: auto;
   object-fit: contain;
   transition: transform 0.3s ease;

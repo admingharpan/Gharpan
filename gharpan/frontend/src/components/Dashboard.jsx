@@ -3,7 +3,6 @@ import "./Dashboard.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { Card, Row, Col } from "react-bootstrap";
-import CountUp from "react-countup";
 import logo from "../images/image1.jpg";
 import { Link } from "react-router-dom";
 
@@ -12,67 +11,6 @@ const dashboardFont = {
 };
 
 const Dashboard = () => {
-  const [statistics, setStatistics] = useState({
-    totalResidents: 0,
-    successfulRehabilitations: 0,
-    ongoingCarePrograms: 0,
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Fetch statistics from the backend
-  const fetchStatistics = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Fetch dashboard statistics from dedicated endpoint
-      const statsResponse = await fetch(
-        "/api/residents/stats/dashboard"
-      );
-      const statsData = await statsResponse.json();
-
-      if (statsData.success) {
-        setStatistics({
-          totalResidents: statsData.data.totalResidents,
-          successfulRehabilitations: statsData.data.successfulRehabilitations,
-          ongoingCarePrograms: statsData.data.ongoingCarePrograms,
-        });
-
-        console.log("Statistics fetched from dashboard endpoint:", statsData.data);
-      }
-    } catch (error) {
-      console.error("Error fetching statistics:", error);
-      setError("Failed to load statistics from server");
-      // Keep default values if API fails
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Load data on component mount
-  useEffect(() => {
-    fetchStatistics();
-  }, []);
-
-  const cards = [
-    {
-      title: "Total Residents",
-      count: statistics.totalResidents,
-      iconClass: "fa fa-users",
-    },
-    {
-      title: "Successful Rehabilitations",
-      count: statistics.successfulRehabilitations,
-      iconClass: "fa fa-handshake",
-    },
-    {
-      title: "Ongoing Care Programs",
-      count: statistics.ongoingCarePrograms,
-      iconClass: "fa fa-heartbeat",
-    },
-  ];
-
   const quickModules = [
     {
       title: "Resident Registration",
@@ -86,15 +24,13 @@ const Dashboard = () => {
       link: "/care-tracking",
     },
   ];
-  {
-    error && <div className="alert alert-danger">{error}</div>;
-  }
+
   return (
     <>
       <div style={{ background: "#FEFCF2" }}>
-        <div className="container my-5 mt-5 pt-5" style={dashboardFont}>
+        <div className="container" style={{ marginTop: "80px", paddingTop: "1rem", ...dashboardFont }}>
           <div
-            className="p-5 text-center rounded-4 shadow-lg dashboard-header"
+            className="p-3 text-center rounded-3 shadow dashboard-header"
             style={{
               ...dashboardFont,
               letterSpacing: "0.5px",
@@ -106,13 +42,13 @@ const Dashboard = () => {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: "1rem",
+                gap: "0.5rem",
               }}
             >
               <h1
                 style={{
                   fontWeight: 700,
-                  fontSize: "2.5rem",
+                  fontSize: "1.8rem",
                   marginBottom: 0,
                   marginTop: 0,
                   lineHeight: 1,
@@ -122,7 +58,7 @@ const Dashboard = () => {
               </h1>
               <p
                 className="lead"
-                style={{ fontSize: "1.2rem", fontWeight: 400, marginTop: 3 }}
+                style={{ fontSize: "0.9rem", fontWeight: 400, marginTop: 0, marginBottom: 0 }}
               >
                 Overview of all rehabilitation activities and records.
               </p>
@@ -132,81 +68,23 @@ const Dashboard = () => {
                 className="dashboard-logo"
                 style={{
                   borderRadius: "1rem",
-                  width: 220,
-                  height: 220,
+                  width: 120,
+                  height: 120,
                 }}
               />
             </div>
           </div>
         </div>
 
-        <div className="container mt-4" style={dashboardFont}>
-          <Row>
-            {cards.map((item, index) => (
-              <Col key={index} md={4} className="mb-4">
-                <Card
-                  className="shadow-lg text-center dashboard-card dashboard-hover"
-                  style={{
-                    borderRadius: "1rem",
-                    border: "2px solid #e5e7eb",
-                    minHeight: 160,
-                    transition: "transform 0.2s, box-shadow 0.2s",
-                    fontFamily: "inherit",
-                    cursor: "pointer",
-                    marginBottom: "1rem",
-                    borderTop: "5px solid #0A400C",
-                  }}
-                >
-                  <Card.Body
-                    style={{
-                      padding: "1rem 1rem",
-                    }}
-                  >
-                    <i
-                      className={`${item.iconClass} fa-2x mb-3`}
-                      style={{ color: "#0A400C" }}
-                    ></i>
-                    <Card.Title
-                      className="dashboard-title"
-                      style={{
-                        fontWeight: 700,
-                        fontSize: "1.1rem",
-                        marginBottom: 8,
-                        letterSpacing: "0.5px",
-                      }}
-                    >
-                      {item.title}
-                    </Card.Title>
-                    <Card.Text
-                      className="dashboard-count"
-                      style={{ fontSize: "1.8rem", fontWeight: 800 }}
-                    >
-                      {loading ? (
-                        <span
-                          className="spinner-border spinner-border-sm"
-                          role="status"
-                          aria-hidden="true"
-                        ></span>
-                      ) : (
-                        <CountUp end={item.count} duration={2.5} />
-                      )}
-                    </Card.Text>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        </div>
-
-        <div class="mt-5 mb-5">
-          <div class="p-5 text-center bg-body-tertiary">
-            <div class="container ">
-              <h4 className="text-center mb-4" style={{ color: "#0A400C" }}>
+        <div className="mt-4 mb-3">
+          <div className="p-3 text-center bg-body-tertiary">
+            <div className="container">
+              <h4 className="text-center mb-2" style={{ color: "#0A400C", fontSize: "1.1rem" }}>
                 Management Modules
               </h4>
               <Row>
                 {quickModules.map((item, index) => (
-                  <Col key={index} md={4} className="mb-4">
+                  <Col key={index} md={4} className="mb-2">
                     {item.link ? (
                       <Link to={item.link} style={{ textDecoration: "none" }}>
                         <Card
@@ -222,7 +100,7 @@ const Dashboard = () => {
                             marginBottom: "1rem",
                           }}
                         >
-                          <Card.Body style={{ padding: "1.5rem 1rem" }}>
+                          <Card.Body style={{ padding: "0.8rem 0.8rem" }}>
                             <i
                               className={`${item.iconClass} fa-2x mb-3`}
                               style={{ color: "#0A400C" }}
@@ -277,8 +155,8 @@ const Dashboard = () => {
                   </Col>
                 ))}
               </Row>
-            </div>{" "}
-          </div>{" "}
+            </div>
+          </div>
         </div>
       </div>
     </>
