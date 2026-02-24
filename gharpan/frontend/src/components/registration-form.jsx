@@ -2133,241 +2133,171 @@ function RegistrationForm() {
                   color: "#0A400C",
                 }}
               >
-                Review & Confirm Details
+                Review & Confirm All Details
               </h3>
 
               <div className="alert alert-info mb-4" role="alert">
-                Please review all the information below before submitting the
-                form. You can go back to any step to make changes.
+                <strong>Please review all the information below before submitting the form.</strong> You can go back to any step to make changes.
               </div>
 
-              {/* Basic Information Review */}
-              <div className="mb-4">
-                <h5 className="text-primary mb-3">Basic Information</h5>
+              {/* Step 1: Basic Information */}
+              <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#0A400C"}}>
+                <h5 className="text-primary mb-4 fw-bold">📋 Basic Information</h5>
                 <div className="row g-3">
-                  {formData.registrationNo && (
-                    <div className="col-md-6">
-                      <strong>Registration No.:</strong>{" "}
-                      {formData.registrationNo}
-                    </div>
-                  )}
-                  {formData.admissionDate && (
-                    <div className="col-md-6">
-                      <strong>Admission Date:</strong>{" "}
-                      {new Date(formData.admissionDate).toLocaleDateString()}
-                    </div>
-                  )}
-                  {formData.name && (
-                    <div className="col-md-6">
-                      <strong>Full Name:</strong> {formData.name}
-                    </div>
-                  )}
-                  {formData.nameGivenByOrganization && (
-                    <div className="col-md-6">
-                      <strong>Name by Organization:</strong>{" "}
-                      {formData.nameGivenByOrganization}
-                    </div>
-                  )}
-                  {formData.dateOfBirth && (
-                    <div className="col-md-6">
-                      <strong>Date of Birth:</strong>{" "}
-                      {new Date(formData.dateOfBirth).toLocaleDateString()}
-                    </div>
-                  )}
-                  {formData.gender && (
-                    <div className="col-md-6">
-                      <strong>Gender:</strong> {formData.gender}
-                    </div>
-                  )}
-                  {formData.age && (
-                    <div className="col-md-6">
-                      <strong>Age:</strong> {formData.age} years
-                    </div>
-                  )}
-                  {formData.weight && (
-                    <div className="col-md-6">
-                      <strong>Weight:</strong> {formData.weight} kg
-                    </div>
-                  )}
-                  {formData.height && (
-                    <div className="col-md-6">
-                      <strong>Height:</strong> {formData.height} cm
-                    </div>
-                  )}
-                  {formData.religion && (
-                    <div className="col-md-6">
-                      <strong>Religion:</strong> {formData.religion}
-                    </div>
-                  )}
+                  <div className="col-md-6"><strong>Registration No.:</strong> <span className="text-muted">{formData.registrationNo || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Admission Date:</strong> <span className="text-muted">{formData.admissionDate ? new Date(formData.admissionDate).toLocaleDateString() : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Full Name:</strong> <span className="text-muted">{formData.name || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Name by Organization:</strong> <span className="text-muted">{formData.nameGivenByOrganization || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Date of Birth:</strong> <span className="text-muted">{formData.dateOfBirth ? new Date(formData.dateOfBirth).toLocaleDateString() : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Gender:</strong> <span className="text-muted">{formData.gender || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Age:</strong> <span className="text-muted">{formData.age ? `${formData.age} years` : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Weight:</strong> <span className="text-muted">{formData.weight ? `${formData.weight} kg` : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Height:</strong> <span className="text-muted">{formData.height ? `${formData.height} cm` : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Religion:</strong> <span className="text-muted">{formData.religion || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Identification Mark:</strong> <span className="text-muted">{formData.identificationMark || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Category:</strong> <span className="text-muted">{formData.category || "N/A"}</span></div>
                 </div>
               </div>
 
-              {/* Contact Information Review */}
-              <div className="mb-4">
-                <h5 className="text-primary mb-3">
-                  Contact & Address Information
-                </h5>
+              {/* Step 2: Contact & Address Information */}
+              <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#2563eb"}}>
+                <h5 className="text-primary mb-4 fw-bold">📞 Contact & Address Information</h5>
                 <div className="row g-3">
-                  {formData.fullAddress && (
-                    <div className="col-12">
-                      <strong>Full Address:</strong> {formData.fullAddress}
-                    </div>
-                  )}
-                  {formData.state && (
-                    <div className="col-md-6">
-                      <strong>State:</strong> {formData.state}
-                    </div>
-                  )}
-                  {formData.district && (
-                    <div className="col-md-6">
-                      <strong>District:</strong> {formData.district}
-                    </div>
-                  )}
-                  {formData.guardianName && (
-                    <div className="col-md-6">
-                      <strong>Guardian Name:</strong> {formData.guardianName}
-                    </div>
-                  )}
-                  {formData.mobileNo && (
-                    <div className="col-md-6">
-                      <strong>Mobile Number:</strong> {formData.mobileNo}
-                    </div>
-                  )}
-                  {formData.voterId && (
-                    <div className="col-md-6">
-                      <strong>Voter ID:</strong> {formData.voterId}
-                    </div>
-                  )}
-                  {formData.aadhaarNumber && (
-                    <div className="col-md-6">
-                      <strong>Aadhaar Number:</strong> {formData.aadhaarNumber}
-                    </div>
-                  )}
+                  <div className="col-12"><strong>Full Address:</strong> <span className="text-muted">{formData.fullAddress || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>City:</strong> <span className="text-muted">{formData.city || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>District:</strong> <span className="text-muted">{formData.district || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>State:</strong> <span className="text-muted">{formData.state || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Country:</strong> <span className="text-muted">{formData.country || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>PIN Code:</strong> <span className="text-muted">{formData.pincode || "N/A"}</span></div>
+                  <div className="col-12"><strong>Alternative Address:</strong> <span className="text-muted">{formData.alternativeAddress || "N/A"}</span></div>
+                  <div className="col-12"><strong>Nearest Landmark:</strong> <span className="text-muted">{formData.nearestLandmark || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Distance from Facility (km):</strong> <span className="text-muted">{formData.distanceFromFacility || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Latitude:</strong> <span className="text-muted">{formData.latitude || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Longitude:</strong> <span className="text-muted">{formData.longitude || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Mobile Number:</strong> <span className="text-muted">{formData.mobileNo || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Phone Number:</strong> <span className="text-muted">{formData.phoneNumber || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Alternative Contact:</strong> <span className="text-muted">{formData.alternativeContact || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Email Address:</strong> <span className="text-muted">{formData.emailAddress || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Social Media Handle:</strong> <span className="text-muted">{formData.socialMediaHandle || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Voter ID:</strong> <span className="text-muted">{formData.voterId || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Aadhaar Number:</strong> <span className="text-muted">{formData.aadhaarNumber || "N/A"}</span></div>
                 </div>
               </div>
 
-              {/* Health Information Review */}
-              <div className="mb-4">
-                <h5 className="text-primary mb-3">Health Information</h5>
+              {/* Guardian & Emergency Contact */}
+              <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#7c3aed"}}>
+                <h5 className="text-primary mb-4 fw-bold">👥 Guardian & Emergency Contact</h5>
                 <div className="row g-3">
-                  {formData.healthStatus && (
-                    <div className="col-md-6">
-                      <strong>Health Status:</strong>
-                      <span
-                        className={`ms-2 px-2 py-1 rounded text-sm ${
-                          formData.healthStatus?.toLowerCase().includes("good")
-                            ? "bg-success bg-opacity-10 text-success"
-                            : formData.healthStatus?.toLowerCase().includes("critical")
-                            ? "bg-danger bg-opacity-10 text-danger"
-                            : "bg-warning bg-opacity-10 text-warning"
-                        }`}
-                      >
-                        {formData.healthStatus}
-                      </span>
-                    </div>
-                  )}
-                  {formData.category && (
-                    <div className="col-md-6">
-                      <strong>Category:</strong> {formData.category}
-                    </div>
-                  )}
-                  {formData.bloodGroup && (
-                    <div className="col-md-6">
-                      <strong>Blood Group:</strong> {formData.bloodGroup}
-                    </div>
-                  )}
-                  {formData.allergies && (
-                    <div className="col-12">
-                      <strong>Allergies:</strong> {formData.allergies}
-                    </div>
-                  )}
-                  {formData.medicalConditions && (
-                    <div className="col-12">
-                      <strong>Medical Conditions:</strong>{formData.medicalConditions}
-                    </div>
-                  )}
-                  {formData.disabilityStatus && (
-                    <div className="col-md-6">
-                      <strong>Disability Status:</strong>{" "}
-                      {formData.disabilityStatus}
-                    </div>
-                  )}
+                  <div className="col-md-6"><strong>Guardian Name:</strong> <span className="text-muted">{formData.guardianName || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Relative Who Admitted:</strong> <span className="text-muted">{formData.relativeAdmit || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Relationship with Resident:</strong> <span className="text-muted">{formData.relationWith || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Emergency Contact Name:</strong> <span className="text-muted">{formData.emergencyContactName || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Emergency Contact Number:</strong> <span className="text-muted">{formData.emergencyContactNumber || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Emergency Contact Relationship:</strong> <span className="text-muted">{formData.emergencyContactRelationship || "N/A"}</span></div>
                 </div>
               </div>
 
-              {/* Administrative Information Review */}
-              <div className="mb-4">
-                <h5 className="text-primary mb-3">
-                  Administrative Information
-                </h5>
+              {/* Step 3: Health Information */}
+              <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#dc2626"}}>
+                <h5 className="text-primary mb-4 fw-bold">🏥 Health Information</h5>
                 <div className="row g-3">
-                  {formData.ward && (
-                    <div className="col-md-6">
-                      <strong>Ward:</strong> {formData.ward}
-                    </div>
-                  )}
-                  {formData.admittedBy && (
-                    <div className="col-md-6">
-                      <strong>Admitted By:</strong> {formData.admittedBy}
-                    </div>
-                  )}
-                  {formData.rehabStatus && (
-                    <div className="col-md-6">
-                      <strong>Rehabilitation Status:</strong>{" "}
-                      {formData.rehabStatus}
-                    </div>
-                  )}
-                  {formData.receiptNo && (
-                    <div className="col-md-6">
-                      <strong>Receipt No.:</strong> {formData.receiptNo}
-                    </div>
-                  )}
-                  {formData.comments && (
-                    <div className="col-12">
-                      <strong>Comments:</strong> {formData.comments}
-                    </div>
-                  )}
+                  <div className="col-md-6">
+                    <strong>Health Status:</strong>
+                    <span className={`ms-2 badge ${formData.healthStatus?.toLowerCase().includes("good") ? "bg-success" : formData.healthStatus?.toLowerCase().includes("critical") ? "bg-danger" : "bg-warning"}`}>
+                      {formData.healthStatus || "N/A"}
+                    </span>
+                  </div>
+                  <div className="col-md-6"><strong>Blood Group:</strong> <span className="text-muted">{formData.bloodGroup || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Body Temperature:</strong> <span className="text-muted">{formData.bodyTemperature ? `${formData.bodyTemperature}°C` : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Heart Rate:</strong> <span className="text-muted">{formData.heartRate ? `${formData.heartRate} BPM` : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Respiratory Rate:</strong> <span className="text-muted">{formData.respiratoryRate ? `${formData.respiratoryRate}/min` : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Blood Pressure:</strong> <span className="text-muted">{formData.bloodPressure || "N/A"}</span></div>
+                  <div className="col-12"><strong>Allergies:</strong> <span className="text-muted">{formData.allergies || "N/A"}</span></div>
+                  <div className="col-12"><strong>Other Known Allergies:</strong> <span className="text-muted">{formData.knownAllergies || "N/A"}</span></div>
+                  <div className="col-12"><strong>Medical Conditions:</strong> <span className="text-muted">{formData.medicalConditions || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Disability Status:</strong> <span className="text-muted">{formData.disabilityStatus || "N/A"}</span></div>
+                  <div className="col-12"><strong>Disability Details:</strong> <span className="text-muted">{formData.disabilityDetails || "N/A"}</span></div>
+                  <div className="col-12"><strong>Current Medications:</strong> <span className="text-muted">{formData.medications || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Rehabilitation Status:</strong> <span className="text-muted">{formData.rehabStatus || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Primary Doctor:</strong> <span className="text-muted">{formData.primaryDoctor || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Preferred Hospital:</strong> <span className="text-muted">{formData.preferredHospital || "N/A"}</span></div>
+                  <div className="col-12"><strong>Medical History Notes:</strong> <span className="text-muted">{formData.medicalHistoryNotes || "N/A"}</span></div>
+                  <div className="col-12"><strong>Medical History:</strong> <span className="text-muted">{formData.medicalHistory || "N/A"}</span></div>
+                </div>
+              </div>
+
+              {/* Informer Information */}
+              <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#ea580c"}}>
+                <h5 className="text-primary mb-4 fw-bold">ℹ️ Informer Information</h5>
+                <div className="row g-3">
+                  <div className="col-md-6"><strong>Informer Name:</strong> <span className="text-muted">{formData.informerName || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Informer Mobile:</strong> <span className="text-muted">{formData.informerMobile || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Informer Relationship:</strong> <span className="text-muted">{formData.informerRelationship || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Information Date:</strong> <span className="text-muted">{formData.informationDate ? new Date(formData.informationDate).toLocaleDateString() : "N/A"}</span></div>
+                  <div className="col-12"><strong>Informer Address:</strong> <span className="text-muted">{formData.informerAddress || "N/A"}</span></div>
+                  <div className="col-12"><strong>Information Details:</strong> <span className="text-muted">{formData.informationDetails || "N/A"}</span></div>
+                </div>
+              </div>
+
+              {/* Step 4: Transport & Organization */}
+              <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#16a34a"}}>
+                <h5 className="text-primary mb-4 fw-bold">🚗 Transport & Organization</h5>
+                <div className="row g-3">
+                  <div className="col-md-6"><strong>Vehicle No.:</strong> <span className="text-muted">{formData.conveyanceVehicleNo || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Pick Up Place:</strong> <span className="text-muted">{formData.pickUpPlace || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Pick Up Time:</strong> <span className="text-muted">{formData.pickUpTime ? new Date(formData.pickUpTime).toLocaleString() : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Transport Time:</strong> <span className="text-muted">{formData.transportTime ? new Date(formData.transportTime).toLocaleString() : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Entrant Name:</strong> <span className="text-muted">{formData.entrantName || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Driver Name:</strong> <span className="text-muted">{formData.driverName || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Driver Mobile:</strong> <span className="text-muted">{formData.driverMobile || "N/A"}</span></div>
+                  <div className="col-12"><strong>Transport Notes:</strong> <span className="text-muted">{formData.transportNotes || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Admitted By:</strong> <span className="text-muted">{formData.admittedBy || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Ward:</strong> <span className="text-muted">{formData.ward || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Organization ID:</strong> <span className="text-muted">{formData.organizationId || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Admission Status:</strong> <span className="text-muted">{formData.admissionStatus || "N/A"}</span></div>
+                </div>
+              </div>
+
+              {/* Financial & Documentation */}
+              <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#2563eb"}}>
+                <h5 className="text-primary mb-4 fw-bold">💰 Financial & Documentation</h5>
+                <div className="row g-3">
+                  <div className="col-md-6"><strong>Receipt No.:</strong> <span className="text-muted">{formData.receiptNo || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Letter No.:</strong> <span className="text-muted">{formData.letterNo || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Item Amount (₹):</strong> <span className="text-muted">{formData.itemAmount || "N/A"}</span></div>
+                  <div className="col-12"><strong>Item Description:</strong> <span className="text-muted">{formData.itemDescription || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Video URL:</strong> <span className="text-muted">{formData.videoUrl ? <a href={formData.videoUrl} target="_blank" rel="noopener noreferrer">{formData.videoUrl}</a> : "N/A"}</span></div>
+                </div>
+              </div>
+
+              {/* Comments & Notes */}
+              <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#7c3aed"}}>
+                <h5 className="text-primary mb-4 fw-bold">📝 Comments & Notes</h5>
+                <div className="row g-3">
+                  <div className="col-12"><strong>General Comments:</strong> <span className="text-muted">{formData.comments || "N/A"}</span></div>
+                  <div className="col-12"><strong>Additional Comments:</strong> <span className="text-muted">{formData.generalComments || "N/A"}</span></div>
+                  <div className="col-12"><strong>Medical Notes:</strong> <span className="text-muted">{formData.medicalNotes || "N/A"}</span></div>
+                  <div className="col-12"><strong>Behavioral Notes:</strong> <span className="text-muted">{formData.behavioralNotes || "N/A"}</span></div>
+                  <div className="col-12"><strong>Care Instructions:</strong> <span className="text-muted">{formData.careInstructions || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Priority Level:</strong> <span className="text-muted">{formData.priorityLevel || "N/A"}</span></div>
+                  <div className="col-12"><strong>Update Summary:</strong> <span className="text-muted">{formData.updateSummary || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Updated By:</strong> <span className="text-muted">{formData.updatedBy || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Last Update Date:</strong> <span className="text-muted">{formData.lastUpdateDate ? new Date(formData.lastUpdateDate).toLocaleDateString() : "N/A"}</span></div>
                 </div>
               </div>
 
               {/* Documents & Photos Review */}
-              <div className="mb-4">
-                <h5 className="text-primary mb-3">Documents & Media</h5>
+              <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#059669"}}>
+                <h5 className="text-primary mb-4 fw-bold">📄 Documents & Media</h5>
                 <div className="row g-3">
-                  {formData.photoBeforeAdmission && (
-                    <div className="col-md-6">
-                      <strong>Photo (Before Admission):</strong> {formData.photoBeforeAdmission.name}
-                    </div>
-                  )}
-                  {formData.photoAfterAdmission && (
-                    <div className="col-md-6">
-                      <strong>Photo (After Admission):</strong> {formData.photoAfterAdmission.name}
-                    </div>
-                  )}
-                  {formData.videoUrl && (
-                    <div className="col-md-6">
-                      <strong>Video URL:</strong>
-                      <a
-                        href={formData.videoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ms-2"
-                      >
-                        {formData.videoUrl}
-                      </a>
-                    </div>
-                  )}
+                  <div className="col-md-6"><strong>Photo (Before Admission):</strong> <span className="text-muted">{formData.photoBeforeAdmission ? formData.photoBeforeAdmission.name : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Photo (After Admission):</strong> <span className="text-muted">{formData.photoAfterAdmission ? formData.photoAfterAdmission.name : "N/A"}</span></div>
                   {formData.documents.length > 0 && (
                     <div className="col-12">
-                      <strong>
-                        Uploaded Documents ({formData.documents.length}):
-                      </strong>
+                      <strong>Uploaded Documents ({formData.documents.length}):</strong>
                       <div className="mt-2">
                         {formData.documents.map((doc, index) => (
-                          <div
-                            key={doc.id}
-                            className="border rounded p-2 mb-2 bg-light"
-                          >
+                          <div key={doc.id} className="border rounded p-2 mb-2 bg-light">
                             <div className="row align-items-center">
                               <div className="col-md-4">
                                 <i className="fas fa-file-alt text-primary me-2"></i>
@@ -2375,17 +2305,11 @@ function RegistrationForm() {
                               </div>
                               <div className="col-md-3">
                                 <span className="badge bg-secondary">
-                                  {documentCategories.find(
-                                    (cat) => cat.value === doc.category
-                                  )?.label || "Uncategorized"}
+                                  {documentCategories.find((cat) => cat.value === doc.category)?.label || "Uncategorized"}
                                 </span>
                               </div>
                               <div className="col-md-5">
-                                {doc.description && (
-                                  <small className="text-muted">
-                                    {doc.description}
-                                  </small>
-                                )}
+                                {doc.description && <small className="text-muted">{doc.description}</small>}
                               </div>
                             </div>
                           </div>
@@ -2393,11 +2317,14 @@ function RegistrationForm() {
                       </div>
                     </div>
                   )}
+                  {formData.documents.length === 0 && (
+                    <div className="col-12"><span className="text-muted">No documents uploaded</span></div>
+                  )}
                 </div>
               </div>
 
               {/* Confirmation Checkbox */}
-              <div className="mt-4 p-3 bg-light rounded">
+              <div className="mt-4 p-3 bg-light rounded border-2" style={{borderColor: "#0A400C"}}>
                 <div className="form-check">
                   <input
                     className="form-check-input"
