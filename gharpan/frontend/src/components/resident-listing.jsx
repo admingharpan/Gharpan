@@ -2472,10 +2472,16 @@ const UpdateResidentModal = () => {
                   <strong>Mobile No:</strong> {selectedResident.mobileNo || "N/A"}
                 </div>
                 <div>
+                  <strong>Phone Number:</strong> {selectedResident.phoneNumber || "N/A"}
+                </div>
+                <div>
                   <strong>Alternative Contact:</strong> {selectedResident.alternativeContact || "N/A"}
                 </div>
                 <div>
                   <strong>Email:</strong> {selectedResident.emailAddress || "N/A"}
+                </div>
+                <div>
+                  <strong>Social Media Handle:</strong> {selectedResident.socialMediaHandle || "N/A"}
                 </div>
                 <div>
                   <strong>Voter ID:</strong> {selectedResident.voterId || "N/A"}
@@ -2483,7 +2489,34 @@ const UpdateResidentModal = () => {
                 <div>
                   <strong>Aadhaar Number:</strong> {selectedResident.aadhaarNumber || "N/A"}
                 </div>
+                <div>
+                  <strong>Address - City:</strong> {selectedResident.address?.city || "N/A"}
+                </div>
+                <div>
+                  <strong>Address - District:</strong> {selectedResident.address?.district || "N/A"}
+                </div>
+                <div>
+                  <strong>Address - State:</strong> {selectedResident.address?.state || "N/A"}
+                </div>
+                <div>
+                  <strong>Address - PIN Code:</strong> {selectedResident.address?.pincode || "N/A"}
+                </div>
+                <div>
+                  <strong>Address - Country:</strong> {selectedResident.address?.country || "N/A"}
+                </div>
+                <div>
+                  <strong>Nearest Landmark:</strong> {selectedResident.nearestLandmark || "N/A"}
+                </div>
+                <div>
+                  <strong>Distance from Facility (km):</strong> {selectedResident.distanceFromFacility || "N/A"}
+                </div>
               </div>
+              {selectedResident.alternativeAddress && (
+                <div className="mt-4">
+                  <strong>Alternative Address:</strong>
+                  <p className="mt-1 text-gray-700">{selectedResident.alternativeAddress}</p>
+                </div>
+              )}
             </div>
 
             {/* Guardian & Family Information */}
@@ -2694,6 +2727,10 @@ const UpdateResidentModal = () => {
                 <div>
                   <strong>Pick Up Time:</strong>{" "}
                   {selectedResident.pickUpTime ? new Date(selectedResident.pickUpTime).toLocaleString("en-IN") : "N/A"}
+                </div>
+                <div>
+                  <strong>Transport Time:</strong>{" "}
+                  {selectedResident.transportTime ? new Date(selectedResident.transportTime).toLocaleString("en-IN") : "N/A"}
                 </div>
                 <div>
                   <strong>Driver Name:</strong>{" "}
@@ -3544,13 +3581,13 @@ const UpdateResidentModal = () => {
                           <Eye size={16} className="mr-1" />
                           View
                         </button>
-                        <button
-                          onClick={() => handleUpdateClick(resident)}
+                        <Link
+                          to={`/register?update=${resident._id}`}
                           className="text-green-600 hover:text-green-900 flex items-center"
                         >
                           <Edit size={16} className="mr-1" />
                           Update
-                        </button>
+                        </Link>
                         {userRole === "superadmin" && (
                           <button
                             onClick={() => handleDeleteClick(resident)}

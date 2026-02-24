@@ -15,6 +15,7 @@ import {
 function RegistrationForm() {
   const [animate, setAnimate] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
   const [searchParams] = useSearchParams();
   const [isUpdateMode, setIsUpdateMode] = useState(false);
@@ -169,6 +170,7 @@ function RegistrationForm() {
   // Fetch resident data for update with all fields
   const fetchResidentData = async (id) => {
     try {
+      setIsLoading(true);
       const response = await fetch(`/api/residents/${id}`);
       const result = await response.json();
 
@@ -293,10 +295,14 @@ function RegistrationForm() {
           photoBeforeAdmissionUrl: residentData.photoBeforeAdmissionUrl,
           photoAfterAdmissionUrl: residentData.photoAfterAdmissionUrl,
         }));
+        
+        showInfo("Resident data loaded. You can now update the information.");
       }
     } catch (error) {
       console.error("Error fetching resident data:", error);
       showError("Error loading resident data for update");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -807,27 +813,36 @@ function RegistrationForm() {
     <>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
-      <div>
-        <h1
-          className="text-center mt-5 pt-5"
-          style={{
-            color: "#0A400C",
-            fontFamily: "Inter, Arial, Helvetica, sans-serif",
-            fontWeight: 700,
-            letterSpacing: "1px",
-          }}
-        >
-          <i className="fa fa-id-card-o me-2"></i>
-          {isUpdateMode ? "Update Resident Information" : "Registration Form"}
-        </h1>
-      </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
+            <p className="text-lg font-semibold text-gray-700">Loading resident data...</p>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div>
+            <h1
+              className="text-center mt-5 pt-5"
+              style={{
+                color: "#0A400C",
+                fontFamily: "Inter, Arial, Helvetica, sans-serif",
+                fontWeight: 700,
+                letterSpacing: "1px",
+              }}
+            >
+              <i className="fa fa-id-card-o me-2"></i>
+              {isUpdateMode ? "Update Resident Information" : "Registration Form"}
+            </h1>
+          </div>
 
-      <div
-        className={`container mt-4 mb-5 shadow-lg p-5 rounded bg-light ${
-          animate ? "form-container-animate" : ""
-        }`}
-        style={formFont}
-      >
+          <div
+            className={`container mt-4 mb-5 shadow-lg p-5 rounded bg-light ${
+              animate ? "form-container-animate" : ""
+            }`}
+            style={formFont}
+          >
         {/* Form Steps */}
         <FormSteps
           steps={formSteps}
@@ -2473,6 +2488,8 @@ function RegistrationForm() {
           </div>
         </form>
       </div>
+        </>
+      )}
     </>
   );
 }

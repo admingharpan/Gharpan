@@ -2236,7 +2236,6 @@ router.get("/:id/download", async (req, res) => {
       const doc = new PDFDocument({
         margin: 30,
         size: "A4",
-        bufferPages: true,
         info: {
           Title: `Resident ${template === "summary"
               ? "Summary"
@@ -2951,45 +2950,28 @@ router.get("/:id/download", async (req, res) => {
 
             yPosition += 10;
           });
-        }
 
-        // Add page numbers to all pages (only if there are actual pages with content)
-        const pages = doc.bufferedPageRange();
-        const totalPages = pages.count;
-
-        // Only add footers if there are pages with content
-        if (totalPages > 0) {
-          for (let i = 0; i < totalPages; i++) {
-            doc.switchToPage(i);
-
-            // Footer
-            const footerY = doc.page.height - 60;
-            doc
-              .rect(0, footerY, doc.page.width, 60)
-              .fillAndStroke(lightGreen, primaryGreen);
-            doc
-              .fontSize(10)
-              .font("Helvetica-Bold")
-              .fillColor(primaryGreen)
-              .text(
-                "Gharpan Foundation - Residential Care & Rehabilitation Center",
-                40,
-                footerY + 15,
-                { width: 520, align: 'center' }
-              )
-              .fontSize(8)
-              .font("Helvetica")
-              .text(
-                `Page ${i + 1} of ${totalPages} | Generated: ${new Date().toLocaleDateString("en-IN")} at ${new Date().toLocaleTimeString("en-IN")}`,
-                40,
-                footerY + 35,
-                { width: 520, align: 'center' }
-              );
-          }
-        }
+        // Add footer on finish (after all content is rendered)
+        doc.on('pageAdded', () => {
+          const footerY = doc.page.height - 60;
+          doc
+            .rect(0, footerY, doc.page.width, 60)
+            .fillAndStroke(lightGreen, primaryGreen);
+          doc
+            .fontSize(10)
+            .font("Helvetica-Bold")
+            .fillColor(primaryGreen)
+            .text(
+              "Gharpan Foundation - Residential Care & Rehabilitation Center",
+              40,
+              footerY + 15,
+              { width: 520, align: 'center' }
+            );
+        });
 
         doc.end();
       }
+    }
     } else if (format === "excel") {
       const excelData = [
         {
