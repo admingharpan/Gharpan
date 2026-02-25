@@ -785,6 +785,7 @@ const UpdateResidentModal = () => {
   // KEY FIX: Use local state to prevent parent re-renders on every keystroke
   const [localFormData, setLocalFormData] = useState(formData);
   const [updateModalTab, setUpdateModalTab] = useState("edit"); // "edit" or "review"
+  const [activeSection, setActiveSection] = useState("basic"); // Section navigation state
 
   // Sync local state when modal opens
   useEffect(() => {
@@ -878,6 +879,82 @@ const UpdateResidentModal = () => {
               Review & Confirm
             </button>
           </div>
+
+          {/* Section Navigation - Only show when in Edit tab */}
+          {updateModalTab === "edit" && (
+            <div className="mt-3 flex flex-wrap gap-2 border-b border-gray-300 pb-2">
+              <button
+                onClick={() => setActiveSection("basic")}
+                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                  activeSection === "basic"
+                    ? "bg-green-700 text-white shadow-sm"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                Basic Info
+              </button>
+              <button
+                onClick={() => setActiveSection("contact")}
+                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                  activeSection === "contact"
+                    ? "bg-green-700 text-white shadow-sm"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                Contact
+              </button>
+              <button
+                onClick={() => setActiveSection("health")}
+                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                  activeSection === "health"
+                    ? "bg-green-700 text-white shadow-sm"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                Health
+              </button>
+              <button
+                onClick={() => setActiveSection("address")}
+                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                  activeSection === "address"
+                    ? "bg-green-700 text-white shadow-sm"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                Address
+              </button>
+              <button
+                onClick={() => setActiveSection("informer")}
+                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                  activeSection === "informer"
+                    ? "bg-green-700 text-white shadow-sm"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                Informer
+              </button>
+              <button
+                onClick={() => setActiveSection("transport")}
+                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                  activeSection === "transport"
+                    ? "bg-green-700 text-white shadow-sm"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                Transport & Admin
+              </button>
+              <button
+                onClick={() => setActiveSection("comments")}
+                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                  activeSection === "comments"
+                    ? "bg-green-700 text-white shadow-sm"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                Comments
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Form Content */}
@@ -915,6 +992,7 @@ const UpdateResidentModal = () => {
           {updateModalTab === "edit" && (
             <div>
           {/* Basic Information Section */}
+          {activeSection === "basic" && (
           <div className="p-5 rounded-3 jumbotron mt-0 shadow-sm bg-white">
             <h3
               className="heading mb-4"
@@ -1087,9 +1165,21 @@ const UpdateResidentModal = () => {
                 />
               </div>
             </div>
+            {/* Section Navigation Buttons */}
+            <div className="mt-4 pt-3 border-t flex justify-end">
+              <button
+                type="button"
+                onClick={() => setActiveSection("contact")}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              >
+                Next: Contact Info →
+              </button>
+            </div>
           </div>
+          )}
 
           {/* Contact Information Section */}
+          {activeSection === "contact" && (
           <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
             <h3
               className="heading mb-4"
@@ -1278,9 +1368,28 @@ const UpdateResidentModal = () => {
                 />
               </div>
             </div>
+            {/* Section Navigation Buttons */}
+            <div className="mt-4 pt-3 border-t flex justify-between">
+              <button
+                type="button"
+                onClick={() => setActiveSection("basic")}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+              >
+                ← Previous: Basic Info
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSection("health")}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              >
+                Next: Health Info →
+              </button>
+            </div>
           </div>
+          )}
 
           {/* Health Information Section */}
+          {activeSection === "health" && (
           <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
             <h3
               className="heading mb-4"
@@ -1581,9 +1690,28 @@ const UpdateResidentModal = () => {
                 />
               </div>
             </div>
+            {/* Section Navigation Buttons */}
+            <div className="mt-4 pt-3 border-t flex justify-between">
+              <button
+                type="button"
+                onClick={() => setActiveSection("contact")}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+              >
+                ← Previous: Contact
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSection("address")}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              >
+                Next: Address →
+              </button>
+            </div>
           </div>
+          )}
 
           {/* Address Information Section */}
+          {activeSection === "address" && (
           <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
             <h3
               className="heading mb-4"
@@ -1759,9 +1887,28 @@ const UpdateResidentModal = () => {
                 />
               </div>
             </div>
+            {/* Section Navigation Buttons */}
+            <div className="mt-4 pt-3 border-t flex justify-between">
+              <button
+                type="button"
+                onClick={() => setActiveSection("health")}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+              >
+                ← Previous: Health
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSection("informer")}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              >
+                Next: Informer →
+              </button>
+            </div>
           </div>
+          )}
 
           {/* Informer Information Section */}
+          {activeSection === "informer" && (
           <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
             <h3
               className="heading mb-4"
@@ -1867,9 +2014,28 @@ const UpdateResidentModal = () => {
                 />
               </div>
             </div>
+            {/* Section Navigation Buttons */}
+            <div className="mt-4 pt-3 border-t flex justify-between">
+              <button
+                type="button"
+                onClick={() => setActiveSection("address")}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+              >
+                ← Previous: Address
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSection("transport")}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              >
+                Next: Transport & Admin →
+              </button>
+            </div>
           </div>
+          )}
 
           {/* Transport & Organization Information Section */}
+          {activeSection === "transport" && (
           <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
             <h3
               className="heading mb-4"
@@ -2118,9 +2284,28 @@ const UpdateResidentModal = () => {
                 </select>
               </div>
             </div>
+            {/* Section Navigation Buttons */}
+            <div className="mt-4 pt-3 border-t flex justify-between">
+              <button
+                type="button"
+                onClick={() => setActiveSection("informer")}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+              >
+                ← Previous: Informer
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSection("comments")}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              >
+                Next: Comments →
+              </button>
+            </div>
           </div>
+          )}
 
           {/* Comments Section */}
+          {activeSection === "comments" && (
           <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
             <h3
               className="heading mb-4"
@@ -2245,7 +2430,25 @@ const UpdateResidentModal = () => {
                 />
               </div>
             </div>
+            {/* Section Navigation Buttons */}
+            <div className="mt-4 pt-3 border-t flex justify-between">
+              <button
+                type="button"
+                onClick={() => setActiveSection("transport")}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+              >
+                ← Previous: Transport & Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => setUpdateModalTab("review")}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+              >
+                Review All Changes →
+              </button>
+            </div>
           </div>
+          )}
             </div>
           )}
 

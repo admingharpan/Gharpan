@@ -2265,13 +2265,11 @@ router.get("/:id/download", async (req, res) => {
       doc.pipe(res);
 
       // Helper function to check if we need a new page
-      const checkPageBreak = (yPos, requiredSpace = 100) => {
-        if (yPos + requiredSpace > doc.page.height - 80) {
-          // Only add a new page if we're not at the very beginning of content
-          if (yPos > 100) {
-            doc.addPage();
-            return 50;
-          }
+      const checkPageBreak = (yPos, requiredSpace = 60) => {
+        const pageBottom = doc.page.height - 100; // Leave 100pts for footer
+        if (yPos + requiredSpace > pageBottom && yPos > 150) {
+          doc.addPage();
+          return 50;
         }
         return yPos;
       };
@@ -2368,7 +2366,7 @@ router.get("/:id/download", async (req, res) => {
       };
 
       const addSectionHeader = (title, yPos) => {
-        yPos = checkPageBreak(yPos, 50);
+        yPos = checkPageBreak(yPos, 35);
         doc
           .rect(30, yPos, 540, 28)
           .fillAndStroke(lightGreen, primaryGreen)
@@ -2400,7 +2398,7 @@ router.get("/:id/download", async (req, res) => {
 
       // Fixed photo function - download images and convert to base64
       const addPhotos = async (yPos) => {
-        yPos = checkPageBreak(yPos, 200);
+        yPos = checkPageBreak(yPos, 240);
 
         const photoWidth = 140;
         const photoHeight = 180;
@@ -2856,9 +2854,10 @@ router.get("/:id/download", async (req, res) => {
           ).join(", ");
           yPosition = addField("Uploaded Documents", docList, yPosition, true);
 
-          // Then try to embed document content
-          for (const document of resident.documentIds) {
-            yPosition = checkPageBreak(yPosition, 200);
+          // Then try to embed document content (limit to first 2 documents to save space)
+          const docsToEmbed = resident.documentIds.slice(0, 2);
+          for (const document of docsToEmbed) {
+            yPosition = checkPageBreak(yPosition, 220);
 
             // Document header
             doc
@@ -2878,12 +2877,12 @@ router.get("/:id/download", async (req, res) => {
 
               if (document.mimeType.startsWith('image/')) {
                 // For images, embed them in the PDF
-                yPosition = checkPageBreak(yPosition, 200);
+                yPosition = checkPageBreak(yPosition, 160);
                 doc.image(documentBuffer, 60, yPosition, {
-                  fit: [480, 180],
+                  fit: [480, 140],
                   align: 'center'
                 });
-                yPosition += 190;
+                yPosition += 150;
               } else if (document.mimeType === 'application/pdf') {
                 // For PDFs, add a note that PDF content is attached
                 yPosition = addField("PDF Document", "PDF document available - content embedded separately", yPosition, true);
@@ -2903,12 +2902,13 @@ router.get("/:id/download", async (req, res) => {
           yPosition = addField("Uploaded Documents", "No documents uploaded", yPosition, true);
         }
 
-        // CARE EVENTS
+        // CARE EVENTS (limit to first 3 events to save space)
         if (resident.careEvents && resident.careEvents.length > 0) {
           yPosition = addSectionHeader("CARE EVENTS HISTORY", yPosition);
 
-          resident.careEvents.forEach((event, index) => {
-            yPosition = checkPageBreak(yPosition, 150);
+          const eventsToShow = resident.careEvents.slice(0, 3);
+          eventsToShow.forEach((event, index) => {
+            yPosition = checkPageBreak(yPosition, 120);
 
             // Event header
             doc
@@ -2951,27 +2951,29 @@ router.get("/:id/download", async (req, res) => {
             yPosition += 10;
           });
 
-        // Add footer on finish (after all content is rendered)
-        doc.on('pageAdded', () => {
-          const footerY = doc.page.height - 60;
-          doc
-            .rect(0, footerY, doc.page.width, 60)
-            .fillAndStroke(lightGreen, primaryGreen);
-          doc
-            .fontSize(10)
-            .font("Helvetica-Bold")
-            .fillColor(primaryGreen)
-            .text(
-              "Gharpan Foundation - Residential Care & Rehabilitation Center",
-              40,
-              footerY + 15,
-              { width: 520, align: 'center' }
-            );
-        });
+          if (resident.careEvents.length > 3) {
+            yPosition = addField("Note", `Showing 3 of ${resident.careEvents.length} care events. Full history available in system.`, yPosition, true);
+          }
+        }
+
+        // Add footer on last page
+        const footerY = doc.page.height - 60;
+        doc
+          .rect(0, footerY, doc.page.width, 60)
+          .fillAndStroke(lightGreen, primaryGreen);
+        doc
+          .fontSize(10)
+          .font("Helvetica-Bold")
+          .fillColor(primaryGreen)
+          .text(
+            "Gharpan Foundation - Residential Care & Rehabilitation Center",
+            40,
+            footerY + 15,
+            { width: 520, align: 'center' }
+          );
 
         doc.end();
       }
-    }
     } else if (format === "excel") {
       const excelData = [
         {
