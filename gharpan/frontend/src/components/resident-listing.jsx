@@ -856,67 +856,93 @@ const UpdateResidentModal = () => {
           </div>
           
           {/* Section Navigation Tabs */}
-          <div className="mt-3 flex flex-wrap gap-2 border-b border-gray-300 pb-2">
-            <button
-              onClick={() => setActiveSection("basic")}
-              className={`px-4 py-2 text-sm font-medium rounded-t transition-colors ${
-                activeSection === "basic"
-                  ? "bg-green-700 text-white shadow-sm"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              📋 Basic Info
-            </button>
-            <button
-              onClick={() => setActiveSection("contact")}
-              className={`px-4 py-2 text-sm font-medium rounded-t transition-colors ${
-                activeSection === "contact"
-                  ? "bg-green-700 text-white shadow-sm"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              📞 Contact
-            </button>
-            <button
-              onClick={() => setActiveSection("health")}
-              className={`px-4 py-2 text-sm font-medium rounded-t transition-colors ${
-                activeSection === "health"
-                  ? "bg-green-700 text-white shadow-sm"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              🏥 Health
-            </button>
-            <button
-              onClick={() => setActiveSection("admin")}
-              className={`px-4 py-2 text-sm font-medium rounded-t transition-colors ${
-                activeSection === "admin"
-                  ? "bg-green-700 text-white shadow-sm"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              ⚙️ Admin
-            </button>
-            <button
-              onClick={() => setActiveSection("documents")}
-              className={`px-4 py-2 text-sm font-medium rounded-t transition-colors ${
-                activeSection === "documents"
-                  ? "bg-green-700 text-white shadow-sm"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              📄 Documents
-            </button>
-            <button
-              onClick={() => setActiveSection("review")}
-              className={`px-4 py-2 text-sm font-medium rounded-t transition-colors ${
-                activeSection === "review"
-                  ? "bg-blue-700 text-white shadow-sm"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              ✅ Review & Submit
-            </button>
+          <div className="mt-3 pb-3 border-bottom">
+            <div className="btn-group btn-group-sm" role="group" aria-label="Section navigation">
+              <button
+                type="button"
+                onClick={() => {
+                  console.log("Switching to basic");
+                  setActiveSection("basic");
+                }}
+                className={`btn ${
+                  activeSection === "basic"
+                    ? "btn-success"
+                    : "btn-outline-secondary"
+                }`}
+              >
+                📋 Basic
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  console.log("Switching to contact");
+                  setActiveSection("contact");
+                }}
+                className={`btn ${
+                  activeSection === "contact"
+                    ? "btn-success"
+                    : "btn-outline-secondary"
+                }`}
+              >
+                📞 Contact
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  console.log("Switching to health");
+                  setActiveSection("health");
+                }}
+                className={`btn ${
+                  activeSection === "health"
+                    ? "btn-success"
+                    : "btn-outline-secondary"
+                }`}
+              >
+                🏥 Health
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  console.log("Switching to admin");
+                  setActiveSection("admin");
+                }}
+                className={`btn ${
+                  activeSection === "admin"
+                    ? "btn-success"
+                    : "btn-outline-secondary"
+                }`}
+              >
+                ⚙️ Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  console.log("Switching to documents");
+                  setActiveSection("documents");
+                }}
+                className={`btn ${
+                  activeSection === "documents"
+                    ? "btn-success"
+                    : "btn-outline-secondary"
+                }`}
+              >
+                📄 Docs
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  console.log("Switching to review");
+                  setActiveSection("review");
+                }}
+                className={`btn ${
+                  activeSection === "review"
+                    ? "btn-primary"
+                    : "btn-outline-primary"
+                }`}
+              >
+                ✅ Review
+              </button>
+            </div>
           </div>
         </div>
 
