@@ -784,7 +784,6 @@ const UpdateResidentModal = () => {
 
   // KEY FIX: Use local state to prevent parent re-renders on every keystroke
   const [localFormData, setLocalFormData] = useState(formData);
-  const [updateModalTab, setUpdateModalTab] = useState("edit"); // "edit" or "review"
   const [activeSection, setActiveSection] = useState("basic"); // Section navigation state
 
   // Sync local state when modal opens
@@ -856,105 +855,69 @@ const UpdateResidentModal = () => {
             </button>
           </div>
           
-          {/* Tabs */}
-          <div className="flex space-x-2 border-b border-gray-200">
+          {/* Section Navigation Tabs */}
+          <div className="mt-3 flex flex-wrap gap-2 border-b border-gray-300 pb-2">
             <button
-              onClick={() => setUpdateModalTab("edit")}
-              className={`px-4 py-2 font-medium text-sm transition-colors ${
-                updateModalTab === "edit"
-                  ? "text-white bg-blue-600 border-b-2 border-blue-600 rounded-t"
-                  : "text-gray-600 hover:text-gray-800"
+              onClick={() => setActiveSection("basic")}
+              className={`px-4 py-2 text-sm font-medium rounded-t transition-colors ${
+                activeSection === "basic"
+                  ? "bg-green-700 text-white shadow-sm"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
-              Edit Fields
+              📋 Basic Info
             </button>
             <button
-              onClick={() => setUpdateModalTab("review")}
-              className={`px-4 py-2 font-medium text-sm transition-colors ${
-                updateModalTab === "review"
-                  ? "text-white bg-blue-600 border-b-2 border-blue-600 rounded-t"
-                  : "text-gray-600 hover:text-gray-800"
+              onClick={() => setActiveSection("contact")}
+              className={`px-4 py-2 text-sm font-medium rounded-t transition-colors ${
+                activeSection === "contact"
+                  ? "bg-green-700 text-white shadow-sm"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
-              Review & Confirm
+              📞 Contact
+            </button>
+            <button
+              onClick={() => setActiveSection("health")}
+              className={`px-4 py-2 text-sm font-medium rounded-t transition-colors ${
+                activeSection === "health"
+                  ? "bg-green-700 text-white shadow-sm"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              🏥 Health
+            </button>
+            <button
+              onClick={() => setActiveSection("admin")}
+              className={`px-4 py-2 text-sm font-medium rounded-t transition-colors ${
+                activeSection === "admin"
+                  ? "bg-green-700 text-white shadow-sm"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              ⚙️ Admin
+            </button>
+            <button
+              onClick={() => setActiveSection("documents")}
+              className={`px-4 py-2 text-sm font-medium rounded-t transition-colors ${
+                activeSection === "documents"
+                  ? "bg-green-700 text-white shadow-sm"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              📄 Documents
+            </button>
+            <button
+              onClick={() => setActiveSection("review")}
+              className={`px-4 py-2 text-sm font-medium rounded-t transition-colors ${
+                activeSection === "review"
+                  ? "bg-blue-700 text-white shadow-sm"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              ✅ Review & Submit
             </button>
           </div>
-
-          {/* Section Navigation - Only show when in Edit tab */}
-          {updateModalTab === "edit" && (
-            <div className="mt-3 flex flex-wrap gap-2 border-b border-gray-300 pb-2">
-              <button
-                onClick={() => setActiveSection("basic")}
-                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
-                  activeSection === "basic"
-                    ? "bg-green-700 text-white shadow-sm"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                Basic Info
-              </button>
-              <button
-                onClick={() => setActiveSection("contact")}
-                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
-                  activeSection === "contact"
-                    ? "bg-green-700 text-white shadow-sm"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                Contact
-              </button>
-              <button
-                onClick={() => setActiveSection("health")}
-                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
-                  activeSection === "health"
-                    ? "bg-green-700 text-white shadow-sm"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                Health
-              </button>
-              <button
-                onClick={() => setActiveSection("address")}
-                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
-                  activeSection === "address"
-                    ? "bg-green-700 text-white shadow-sm"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                Address
-              </button>
-              <button
-                onClick={() => setActiveSection("informer")}
-                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
-                  activeSection === "informer"
-                    ? "bg-green-700 text-white shadow-sm"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                Informer
-              </button>
-              <button
-                onClick={() => setActiveSection("transport")}
-                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
-                  activeSection === "transport"
-                    ? "bg-green-700 text-white shadow-sm"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                Transport & Admin
-              </button>
-              <button
-                onClick={() => setActiveSection("comments")}
-                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
-                  activeSection === "comments"
-                    ? "bg-green-700 text-white shadow-sm"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                Comments
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Form Content */}
@@ -988,9 +951,6 @@ const UpdateResidentModal = () => {
             </div>
           ) : null}
 
-          {/* EDIT TAB - Form Fields */}
-          {updateModalTab === "edit" && (
-            <div>
           {/* Basic Information Section */}
           {activeSection === "basic" && (
           <div className="p-5 rounded-3 jumbotron mt-0 shadow-sm bg-white">
@@ -1172,7 +1132,7 @@ const UpdateResidentModal = () => {
                 onClick={() => setActiveSection("contact")}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
               >
-                Next: Contact Info →
+                Next: Contact →
               </button>
             </div>
           </div>
@@ -1375,14 +1335,14 @@ const UpdateResidentModal = () => {
                 onClick={() => setActiveSection("basic")}
                 className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
               >
-                ← Previous: Basic Info
+                ← Basic Info
               </button>
               <button
                 type="button"
                 onClick={() => setActiveSection("health")}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
               >
-                Next: Health Info →
+                Next: Health →
               </button>
             </div>
           </div>
@@ -1697,21 +1657,194 @@ const UpdateResidentModal = () => {
                 onClick={() => setActiveSection("contact")}
                 className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
               >
-                ← Previous: Contact
+                ← Contact
               </button>
               <button
                 type="button"
-                onClick={() => setActiveSection("address")}
+                onClick={() => setActiveSection("admin")}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
               >
-                Next: Address →
+                Next: Admin →
               </button>
             </div>
           </div>
           )}
 
-          {/* Address Information Section */}
-          {activeSection === "address" && (
+          {/* Admin Section - Combines Address, Informer, Transport, Comments */}
+          {activeSection === "admin" && (
+          <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
+            <h3 className="heading mb-4" style={{ fontWeight: 700, fontSize: "1.3rem", color: "#0A400C" }}>
+              Administrative Information
+            </h3>
+
+            {/* Address - Compact */}
+            <div className="mb-4">
+              <h5 className="text-primary mb-3 fw-bold">📍 Address</h5>
+              <div className="row g-3">
+                <div className="col-12">
+                  <label className="form-label" style={{ fontWeight: 600 }}>Full Address</label>
+                  <textarea className="form-control" rows="2" value={localFormData.address?.fullAddress || ""} onChange={(e) => handleLocalInputChange("address.fullAddress", e.target.value)} onBlur={(e) => handleInputBlur("address.fullAddress", e.target.value)} placeholder="Complete address" />
+                </div>
+                <div className="col-md-4">
+                  <label className="form-label" style={{ fontWeight: 600 }}>City</label>
+                  <input type="text" className="form-control" value={localFormData.address?.city || ""} onChange={(e) => handleLocalInputChange("address.city", e.target.value)} onBlur={(e) => handleInputBlur("address.city", e.target.value)} />
+                </div>
+                <div className="col-md-4">
+                  <label className="form-label" style={{ fontWeight: 600 }}>State</label>
+                  <input type="text" className="form-control" value={localFormData.address?.state || ""} onChange={(e) => handleLocalInputChange("address.state", e.target.value)} onBlur={(e) => handleInputBlur("address.state", e.target.value)} />
+                </div>
+                <div className="col-md-4">
+                  <label className="form-label" style={{ fontWeight: 600 }}>PIN</label>
+                  <input type="text" className="form-control" value={localFormData.address?.pincode || ""} onChange={(e) => handleLocalInputChange("address.pincode", e.target.value)} onBlur={(e) => handleInputBlur("address.pincode", e.target.value)} maxLength="6" />
+                </div>
+              </div>
+            </div>
+
+            {/* Informer */}
+            <div className="mb-4 pt-3 border-top">
+              <h5 className="text-info mb-3 fw-bold">ℹ️ Informer Details</h5>
+              <div className="row g-3">
+                <div className="col-md-4">
+                  <label className="form-label" style={{ fontWeight: 600 }}>Name</label>
+                  <input type="text" className="form-control" value={localFormData.informerName || ""} onChange={(e) => handleLocalInputChange("informerName", e.target.value)} onBlur={(e) => handleInputBlur("informerName", e.target.value)} />
+                </div>
+                <div className="col-md-4">
+                  <label className="form-label" style={{ fontWeight: 600 }}>Mobile</label>
+                  <input type="tel" className="form-control" value={localFormData.informerMobile || ""} onChange={(e) => handleLocalInputChange("informerMobile", e.target.value)} onBlur={(e) => handleInputBlur("informerMobile", e.target.value)} maxLength="10" />
+                </div>
+                <div className="col-md-4">
+                  <label className="form-label" style={{ fontWeight: 600 }}>Ward</label>
+                  <input type="text" className="form-control" value={localFormData.ward || ""} onChange={(e) => handleLocalInputChange("ward", e.target.value)} onBlur={(e) => handleInputBlur("ward", e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            {/* Transport */}
+            <div className="mb-4 pt-3 border-top">
+              <h5 className="text-success mb-3 fw-bold">🚗 Transport & Admin</h5>
+              <div className="row g-3">
+                <div className="col-md-3">
+                  <label className="form-label" style={{ fontWeight: 600 }}>Vehicle No</label>
+                  <input type="text" className="form-control" value={localFormData.conveyanceVehicleNo || ""} onChange={(e) => handleLocalInputChange("conveyanceVehicleNo", e.target.value)} onBlur={(e) => handleInputBlur("conveyanceVehicleNo", e.target.value)} />
+                </div>
+                <div className="col-md-3">
+                  <label className="form-label" style={{ fontWeight: 600 }}>Admitted By</label>
+                  <input type="text" className="form-control" value={localFormData.admittedBy || ""} onChange={(e) => handleLocalInputChange("admittedBy", e.target.value)} onBlur={(e) => handleInputBlur("admittedBy", e.target.value)} />
+                </div>
+                <div className="col-md-3">
+                  <label className="form-label" style={{ fontWeight: 600 }}>Receipt No</label>
+                  <input type="text" className="form-control" value={localFormData.receiptNo || ""} onChange={(e) => handleLocalInputChange("receiptNo", e.target.value)} onBlur={(e) => handleInputBlur("receiptNo", e.target.value)} />
+                </div>
+                <div className="col-md-3">
+                  <label className="form-label" style={{ fontWeight: 600 }}>Status</label>
+                  <select className="form-select" value={localFormData.admissionStatus || ""} onChange={(e) => { handleLocalInputChange("admissionStatus", e.target.value); handleInputBlur("admissionStatus", e.target.value); }}>
+                    <option value="">Select</option>
+                    <option value="Active">Active</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Discharged">Discharged</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Comments */}
+            <div className="mb-4 pt-3 border-top">
+              <h5 className="text-warning mb-3 fw-bold">📝 Notes</h5>
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <label className="form-label" style={{ fontWeight: 600 }}>General Comments</label>
+                  <textarea className="form-control" rows="3" value={localFormData.comments || ""} onChange={(e) => handleLocalInputChange("comments", e.target.value)} onBlur={(e) => handleInputBlur("comments", e.target.value)} />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label" style={{ fontWeight: 600 }}>Medical Notes</label>
+                  <textarea className="form-control" rows="3" value={localFormData.medicalNotes || ""} onChange={(e) => handleLocalInputChange("medicalNotes", e.target.value)} onBlur={(e) => handleInputBlur("medicalNotes", e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="mt-4 pt-3 border-t flex justify-between">
+              <button type="button" onClick={() => setActiveSection("health")} className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
+                ← Health
+              </button>
+              <button type="button" onClick={() => setActiveSection("documents")} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                Next: Documents →
+              </button>
+            </div>
+          </div>
+          )}
+
+          {/* Documents Section */}
+          {activeSection === "documents" && (
+          <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
+            <h3 className="heading mb-4" style={{ fontWeight: 700, fontSize: "1.3rem", color: "#0A400C" }}>
+              Documents & Media
+            </h3>
+            <div className="row g-4">
+              {updateResident?.documentIds && updateResident.documentIds.length > 0 ? (
+                <div className="col-12">
+                  <h5 className="mb-3">Uploaded Documents ({updateResident.documentIds.length})</h5>
+                  <div className="list-group">
+                    {updateResident.documentIds.slice(0, 5).map((doc, idx) => (
+                      <div key={idx} className="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                          <strong>{doc.name || `Document ${idx +1}`}</strong>
+                          {doc.type && <span className="ms-2 badge bg-secondary">{doc.type}</span>}
+                        </div>
+                        {doc.filePath && (
+                          <a href={doc.filePath} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-primary">View</a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {updateResident.documentIds.length > 5 && (
+                    <p className="text-muted small mt-2">Showing 5 of {updateResident.documentIds.length} documents</p>
+                  )}
+                </div>
+              ) : (
+                <div className="col-12">
+                  <div className="alert alert-info">No documents uploaded. Add documents from the main details page.</div>
+                </div>
+              )}
+
+              <div className="col-md-6">
+                <h6 className="fw-bold">Photo Before Admission</h6>
+                {localFormData.photoBeforeAdmission ? (
+                  <img src={localFormData.photoBeforeAdmission} alt="Before" className="img-thumbnail" style={{ maxHeight: '150px' }} />
+                ) : (
+                  <p className="text-muted">Not uploaded</p>
+                )}
+              </div>
+
+              <div className="col-md-6">
+                <h6 className="fw-bold">Photo After Admission</h6>
+                {localFormData.photoAfterAdmission ? (
+                  <img src={localFormData.photoAfterAdmission} alt="After" className="img-thumbnail" style={{ maxHeight: '150px' }} />
+                ) : (
+                  <p className="text-muted">Not uploaded</p>
+                )}
+              </div>
+
+              <div className="col-12">
+                <label className="form-label" style={{ fontWeight: 600 }}>Video Documentation URL</label>
+                <input type="url" className="form-control" value={localFormData.videoUrl || ""} onChange={(e) => handleLocalInputChange("videoUrl", e.target.value)} onBlur={(e) => handleInputBlur("videoUrl", e.target.value)} placeholder="https://..." />
+              </div>
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="mt-4 pt-3 border-t flex justify-between">
+              <button type="button" onClick={() => setActiveSection("admin")} className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
+                ← Admin
+              </button>
+              <button type="button" onClick={() => setActiveSection("review")} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                Review & Submit →
+              </button>
+            </div>
+          </div>
+          )}
+
+          {/* Remove old sections - start of address */}
+          {false && activeSection === "address" && (
           <div className="p-5 rounded-3 jumbotron mt-4 shadow-sm bg-white">
             <h3
               className="heading mb-4"
@@ -2430,35 +2563,16 @@ const UpdateResidentModal = () => {
                 />
               </div>
             </div>
-            {/* Section Navigation Buttons */}
-            <div className="mt-4 pt-3 border-t flex justify-between">
-              <button
-                type="button"
-                onClick={() => setActiveSection("transport")}
-                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
-              >
-                ← Previous: Transport & Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => setUpdateModalTab("review")}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-              >
-                Review All Changes →
-              </button>
-            </div>
           </div>
           )}
-            </div>
-          )}
 
-          {/* REVIEW TAB - Comprehensive Review Section */}
-          {updateModalTab === "review" && (
+          {/* Review Section */}
+          {activeSection === "review" && (
             <div className="mt-4">
               <h4 className="text-lg font-bold mb-4" style={{color: "#0A400C"}}>Review & Confirm All Changes</h4>
               
               <div className="alert alert-info mb-4" role="alert">
-                <strong>Please review all the information below.</strong> You can switch to the "Edit Fields" tab to make changes.
+                <strong>Please review all the information below.</strong> Click any section tab above to make changes.
               </div>
 
               {/* Step 1: Basic Information */}
@@ -2585,6 +2699,17 @@ const UpdateResidentModal = () => {
                   <div className="col-md-6"><strong>Updated By:</strong> <span className="text-muted">{localFormData.updatedBy || "N/A"}</span></div>
                   <div className="col-md-6"><strong>Last Update Date:</strong> <span className="text-muted">{localFormData.lastUpdateDate ? new Date(localFormData.lastUpdateDate).toLocaleDateString() : "N/A"}</span></div>
                 </div>
+              </div>
+
+              {/* Navigation Button */}
+              <div className="mt-4 pt-3 border-t">
+                <button
+                  type="button"
+                  onClick={() => setActiveSection("documents")}
+                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                >
+                  ← Back to Documents
+                </button>
               </div>
             </div>
           )}
