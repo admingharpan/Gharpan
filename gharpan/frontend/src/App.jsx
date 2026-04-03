@@ -41,53 +41,55 @@ function AppLayout() {
   const hideLayout = location.pathname === '/';
 
   return (
-    <>
+    <div className="app-shell">
       {!hideLayout && <Navbar />}
 
-      <Routes>
-        {/* Login Page */}
-        <Route path="/" element={<LoginWithRedirect />} />
+      <main className={hideLayout ? '' : 'app-main'}>
+        <Routes>
+          {/* Login Page */}
+          <Route path="/" element={<LoginWithRedirect />} />
 
-        {/* 🔐 Protected Pages */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+          {/* 🔐 Protected Pages */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/register"
-          element={
-            <ProtectedRoute>
-              <RegistrationForm />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/register"
+            element={
+              <ProtectedRoute>
+                <RegistrationForm />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/listings"
-          element={
-            <ProtectedRoute>
-              <ResidentListing />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/listings"
+            element={
+              <ProtectedRoute>
+                <ResidentListing />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/care-tracking"
-          element={
-            <ProtectedRoute>
-              <CareTracking />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+          <Route
+            path="/care-tracking"
+            element={
+              <ProtectedRoute>
+                <CareTracking />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </main>
 
       {!hideLayout && <Footer />}
-    </>
+    </div>
   );
 }
 

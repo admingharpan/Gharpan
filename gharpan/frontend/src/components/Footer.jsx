@@ -40,7 +40,7 @@ function Footer() {
         <hr className="bg-light my-1" />
 
         <p className="text-center mb-0 py-1 small">
-          © 2025 Gharpan Foundation. All rights reserved.
+          © 2026 Gharpan Foundation. All rights reserved.
         </p>
       </div>
     </footer>
