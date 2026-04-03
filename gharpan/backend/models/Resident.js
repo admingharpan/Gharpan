@@ -395,8 +395,21 @@ const residentSchema = new mongoose.Schema({
   },
   admissionStatus: {
     type: String,
-    enum: ['Active', 'Pending', 'Discharged', 'Transferred', 'On Leave', 'Absconded'],
-    default: 'Active'
+    enum: [
+      'Admission',
+      'Discharge',
+      'Transfer',
+      'Death',
+      'Discharge/Transfer',
+      'Body Donation',
+      'Active',
+      'Pending',
+      'Discharged',
+      'Transferred',
+      'On Leave',
+      'Absconded'
+    ],
+    default: 'Admission'
   },
   ward: {
     type: String,

@@ -124,7 +124,7 @@ function RegistrationForm() {
     transportNotes: "",
     admittedBy: "",
     organizationId: "",
-    admissionStatus: "",
+    admissionStatus: "Admission",
     ward: "",
     receiptNo: "",
     letterNo: "",
@@ -277,7 +277,7 @@ function RegistrationForm() {
           transportNotes: residentData.transportNotes || "",
           admittedBy: residentData.admittedBy || "",
           organizationId: residentData.organizationId || "",
-          admissionStatus: residentData.admissionStatus || "",
+          admissionStatus: residentData.admissionStatus || "Admission",
           ward: residentData.ward || "",
           receiptNo: residentData.receiptNo || "",
           letterNo: residentData.letterNo || "",
@@ -292,8 +292,8 @@ function RegistrationForm() {
           documents: residentData.documents || [],
           
           // Store URLs for display purposes
-          photoBeforeAdmissionUrl: residentData.photoBeforeAdmissionUrl,
-          photoAfterAdmissionUrl: residentData.photoAfterAdmissionUrl,
+          photoBeforeAdmissionUrl: residentData.photoBeforeAdmissionUrl || residentData.photoBeforeAdmission || residentData.photos?.before,
+          photoAfterAdmissionUrl: residentData.photoAfterAdmissionUrl || residentData.photoAfterAdmission || residentData.photos?.after,
         }));
         
         showInfo("Resident data loaded. You can now update the information.");
@@ -445,7 +445,7 @@ function RegistrationForm() {
       case 4:
         return ["ward", "admittedBy", "rehabStatus"];
       case 5:
-        return ["photoBeforeAdmission", "photoAfterAdmission"];
+        return ["admissionStatus", "photoBeforeAdmission", "photoAfterAdmission"];
       default:
         return [];
     }
@@ -476,6 +476,57 @@ function RegistrationForm() {
   }
 };
 
+  const formatFieldName = (field) => {
+    const fieldMap = {
+      registrationNo: "Registration number",
+      admissionDate: "Admission date",
+      mobileNo: "Mobile number",
+      aadhaarNumber: "Aadhaar number",
+      dateOfBirth: "Date of birth",
+      emailAddress: "Email address",
+      phoneNumber: "Phone number",
+      emergencyContactNumber: "Emergency contact number",
+    };
+
+    if (fieldMap[field]) return fieldMap[field];
+
+    return field
+      .replace(/([A-Z])/g, " $1")
+      .replace(/^./, (s) => s.toUpperCase())
+      .trim();
+  };
+
+  const normalizeValidationMessage = (message) => {
+    if (!message || typeof message !== "string") return "Invalid field value";
+
+    const requiredMatch = message.match(/Path `([^`]+)` is required\.?/i);
+    if (requiredMatch) {
+      return `${formatFieldName(requiredMatch[1])} is required`;
+    }
+
+    const castMatch = message.match(/Cast to .* failed .* path "?([^"\s]+)"?/i);
+    if (castMatch) {
+      return `${formatFieldName(castMatch[1])} has an invalid value`;
+    }
+
+    return message;
+  };
+
+  const buildCompactValidationMessage = (messages, maxItems = 3) => {
+    const normalized = [...new Set((messages || [])
+      .filter(Boolean)
+      .map((msg) => normalizeValidationMessage(String(msg).trim()))
+      .filter(Boolean))];
+
+    if (!normalized.length) {
+      return "Please review the highlighted fields and try again.";
+    }
+
+    const shown = normalized.slice(0, maxItems);
+    const remaining = normalized.length - shown.length;
+    return `Please correct: ${shown.join("; ")}${remaining > 0 ? ` (+${remaining} more)` : ""}`;
+  };
+
   // Handle submit with proper photo field handling
   async function handleSubmit(e) {
     e.preventDefault();
@@ -485,7 +536,8 @@ function RegistrationForm() {
     setFormErrors(errors);
 
     if (!isValid) {
-      showError("Please fix all validation errors before submitting");
+      const validationMessages = Object.values(errors || {}).filter(Boolean);
+      showError(buildCompactValidationMessage(validationMessages), 7000);
       return;
     }
 
@@ -555,10 +607,13 @@ function RegistrationForm() {
       });
 
       if (!result.success) {
-        throw new Error(
+        const submitError = new Error(
           result.message ||
             (isUpdateMode ? "Update failed" : "Registration failed")
         );
+        submitError.details = Array.isArray(result.errors) ? result.errors : [];
+        submitError.status = response.status;
+        throw submitError;
       }
 
       const newResidentId = result.data._id;
@@ -737,7 +792,7 @@ function RegistrationForm() {
           transportNotes: "",
           admittedBy: "",
           organizationId: "",
-          admissionStatus: "",
+          admissionStatus: "Admission",
           ward: "",
           receiptNo: "",
           letterNo: "",
@@ -757,13 +812,19 @@ function RegistrationForm() {
       console.error("Submission error:", {
         message: error.message,
         stack: error.stack,
+        details: error.details,
       });
-      showError(
-        `Error: ${
-          error.message ||
-          "Unable to submit registration. Please check your connection."
-        }`
-      );
+
+      let errorText =
+        error.message || "Unable to submit registration. Please check your connection.";
+
+      if (Array.isArray(error.details) && error.details.length > 0) {
+        errorText = buildCompactValidationMessage(error.details);
+      } else if (error.message === "Validation error") {
+        errorText = "Please review entered values and try again.";
+      }
+
+      showError(`Error: ${errorText}`, 8000);
     } finally {
       setIsSubmitting(false);
       console.log("Submission complete, isSubmitting set to false");
@@ -808,6 +869,94 @@ function RegistrationForm() {
     { value: "legal_documents", label: "Legal Documents" },
     { value: "other", label: "Other" },
   ];
+
+  const residentStatusOptions = [
+    "Admission",
+    "Discharge",
+    "Transfer",
+    "Death",
+    "Discharge/Transfer",
+    "Body Donation",
+  ];
+
+  const selectedStatusLabel = formData.admissionStatus || "Status";
+  const primaryStatusPhotoLabel = `${selectedStatusLabel} Photo (Primary)`;
+  const secondaryStatusPhotoLabel = `${selectedStatusLabel} Photo (Secondary)`;
+
+  const stepValidationGuides = {
+    1: [
+      "Admission Date should be valid.",
+      "Age must be between 0 and 150.",
+      "Weight and Height cannot be negative.",
+      "Choose only allowed Gender values.",
+    ],
+    2: [
+      "PIN Code must be exactly 6 digits.",
+      "Mobile, alternative, and emergency contacts must be 10 digits.",
+      "Aadhaar must be exactly 12 digits.",
+      "Voter ID format: ABC1234567.",
+      "Email must be a valid email address.",
+    ],
+    3: [
+      "Category should be Other, Emergency, or Routine.",
+      "Body Temperature must be between 30 and 45 degree C.",
+      "Heart Rate must be between 30 and 200 BPM.",
+      "Respiratory Rate must be between 5 and 40.",
+    ],
+    4: [
+      "Informer and Driver mobile numbers must be 10 digits.",
+      "Item Amount cannot be negative.",
+      "Use valid date/time for Information Date and Pick Up Time.",
+    ],
+    5: [
+      "Select the current resident status before uploading evidence.",
+      "Photos should be image files only.",
+      "Each uploaded file must be within size limits.",
+      "Upload all files related to the selected resident status.",
+      "Video URL must start with http:// or https://.",
+    ],
+    6: [
+      "Confirm all details before final submission.",
+      "Fix any field-level errors shown in red.",
+      "If submit fails, review the top error toast and edit listed fields.",
+    ],
+  };
+
+  const ValidationGuide = ({ step }) => {
+    const rules = stepValidationGuides[step] || [];
+    if (!rules.length) return null;
+
+    return (
+      <div className="alert alert-light border mb-4" role="alert">
+        <div className="d-flex align-items-start">
+          <i className="fas fa-shield-alt text-primary me-2 mt-1"></i>
+          <div>
+            <strong className="d-block">Validation Guide</strong>
+            <ul className="mb-0 mt-2 ps-3">
+              {rules.map((rule) => (
+                <li key={rule}>{rule}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const validationHints = {
+    age: "Use a whole number from 0 to 150.",
+    pincode: "Enter exactly 6 digits.",
+    mobileNo: "Enter 10 digits starting with 6, 7, 8, or 9.",
+    tenDigitPhone: "Enter exactly 10 digits.",
+    emailAddress: "Use a valid email format (example: name@example.com).",
+    voterId: "Use format ABC1234567 (3 capital letters + 7 digits).",
+    aadhaarNumber: "Enter exactly 12 digits (no spaces or dashes).",
+    bodyTemperature: "Allowed range: 30 to 45 degree C.",
+    heartRate: "Allowed range: 30 to 200 BPM.",
+    respiratoryRate: "Allowed range: 5 to 40 breaths per minute.",
+    itemAmount: "Amount cannot be negative.",
+    videoUrl: "Use a full URL starting with http:// or https://.",
+  };
 
   return (
     <>
@@ -952,7 +1101,7 @@ function RegistrationForm() {
                     transportNotes: "",
                     admittedBy: "",
                     organizationId: "",
-                    admissionStatus: "",
+                    admissionStatus: "Admission",
                     ward: "",
                     receiptNo: "",
                     letterNo: "",
@@ -995,6 +1144,7 @@ function RegistrationForm() {
               >
                 Basic Information
               </h3>
+              <ValidationGuide step={1} />
               <div className="row g-4">
                 <div className="col-md-6">
                   <FormField
@@ -1075,6 +1225,7 @@ function RegistrationForm() {
                     placeholder="Enter age"
                     min="0"
                     max="150"
+                    helper={validationHints.age}
                   />
                 </div>
                 <div className="col-md-6">
@@ -1138,6 +1289,7 @@ function RegistrationForm() {
               >
                 Contact & Address Information
               </h3>
+              <ValidationGuide step={2} />
               <div className="row g-4">
                 <div className="col-12">
                   <FormField
@@ -1190,6 +1342,7 @@ function RegistrationForm() {
                     placeholder="6-digit PIN code"
                     maxLength="6"
                     pattern="[0-9]{6}"
+                    helper={validationHints.pincode}
                   />
                 </div>
                 <div className="col-md-6">
@@ -1231,7 +1384,7 @@ function RegistrationForm() {
                     onChange={handleInputChange}
                     error={formErrors.mobileNo}
                     placeholder="e.g. 9876543210"
-                    helper="10-digit mobile number starting with 6, 7, 8, or 9"
+                    helper={validationHints.mobileNo}
                     maxLength="10"
                     pattern="[0-9]{10}"
                   />
@@ -1244,6 +1397,9 @@ function RegistrationForm() {
                     onChange={handleInputChange}
                     error={formErrors.alternativeContact}
                     placeholder="Alternative contact number"
+                    helper={validationHints.tenDigitPhone}
+                    maxLength="10"
+                    pattern="[0-9]{10}"
                   />
                 </div>
                 <div className="col-md-6">
@@ -1255,6 +1411,7 @@ function RegistrationForm() {
                     onChange={handleInputChange}
                     error={formErrors.emailAddress}
                     placeholder="Email address"
+                    helper={validationHints.emailAddress}
                   />
                 </div>
                 <div className="col-md-6">
@@ -1265,6 +1422,7 @@ function RegistrationForm() {
                     onChange={handleInputChange}
                     error={formErrors.voterId}
                     placeholder="Enter voter ID"
+                    helper={validationHints.voterId}
                   />
                 </div>
                 <div className="col-md-6">
@@ -1277,6 +1435,7 @@ function RegistrationForm() {
                     placeholder="Enter 12-digit Aadhaar number"
                     maxLength="12"
                     pattern="[0-9]{12}"
+                    helper={validationHints.aadhaarNumber}
                   />
                 </div>
 
@@ -1303,6 +1462,9 @@ function RegistrationForm() {
                         onChange={handleInputChange}
                         error={formErrors.emergencyContactNumber}
                         placeholder="Emergency contact number"
+                        helper={validationHints.tenDigitPhone}
+                        maxLength="10"
+                        pattern="[0-9]{10}"
                       />
                     </div>
                     <div className="col-md-4">
@@ -1342,6 +1504,7 @@ function RegistrationForm() {
               >
                 Health Information
               </h3>
+              <ValidationGuide step={3} />
               <div className="row g-4">
                 <div className="col-md-6">
                   <FormField
@@ -1433,6 +1596,7 @@ function RegistrationForm() {
                         min="30"
                         max="45"
                         step="0.1"
+                        helper={validationHints.bodyTemperature}
                       />
                     </div>
                     <div className="col-md-3">
@@ -1446,6 +1610,7 @@ function RegistrationForm() {
                         placeholder="Normal: 60-100"
                         min="30"
                         max="200"
+                        helper={validationHints.heartRate}
                       />
                     </div>
                     <div className="col-md-3">
@@ -1459,6 +1624,7 @@ function RegistrationForm() {
                         placeholder="Normal: 12-20"
                         min="5"
                         max="40"
+                        helper={validationHints.respiratoryRate}
                       />
                     </div>
                     <div className="col-md-3">
@@ -1602,6 +1768,7 @@ function RegistrationForm() {
                 <i className="fas fa-clipboard-list me-2"></i>
                 Administrative Information
               </h3>
+              <ValidationGuide step={4} />
               
               {/* Informer Information */}
               <div className="mb-4">
@@ -1630,6 +1797,7 @@ function RegistrationForm() {
                       placeholder="10-digit mobile number"
                       maxLength="10"
                       pattern="[0-9]{10}"
+                      helper={validationHints.tenDigitPhone}
                     />
                   </div>
                   <div className="col-md-4">
@@ -1727,6 +1895,9 @@ function RegistrationForm() {
                       onChange={handleInputChange}
                       error={formErrors.driverMobile}
                       placeholder="Driver's mobile number"
+                      helper={validationHints.tenDigitPhone}
+                      maxLength="10"
+                      pattern="[0-9]{10}"
                     />
                   </div>
                   <div className="col-md-6">
@@ -1826,6 +1997,9 @@ function RegistrationForm() {
                       onChange={handleInputChange}
                       error={formErrors.itemAmount}
                       placeholder="Value of items/money"
+                      type="number"
+                      min="0"
+                      helper={validationHints.itemAmount}
                     />
                   </div>
                   <div className="col-12">
@@ -1892,6 +2066,37 @@ function RegistrationForm() {
               >
                 Documents & Media
               </h3>
+              <ValidationGuide step={5} />
+
+              <div className="alert alert-warning mb-4" role="alert">
+                <div className="d-flex align-items-start">
+                  <i className="fas fa-flag-checkered me-2 mt-1"></i>
+                  <div>
+                    <strong>Resident Status</strong>
+                    <div className="mt-2 d-flex flex-wrap gap-3">
+                      {residentStatusOptions.map((status) => (
+                        <div className="form-check form-check-inline mb-0" key={status}>
+                          <input
+                            className="form-check-input"
+                            type="radio"
+                            name="admissionStatus"
+                            id={`status-${status.replace(/[^a-zA-Z0-9]/g, "-")}`}
+                            value={status}
+                            checked={formData.admissionStatus === status}
+                            onChange={handleInputChange}
+                          />
+                          <label
+                            className="form-check-label"
+                            htmlFor={`status-${status.replace(/[^a-zA-Z0-9]/g, "-")}`}
+                          >
+                            {status}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Photo Upload Section - Both Photos */}
               <div className="row g-4 mb-5">
@@ -1909,13 +2114,13 @@ function RegistrationForm() {
                 </div>
                 <div className="col-md-6">
                   <FormField
-                    label="Photo (Before Admission)"
+                    label={primaryStatusPhotoLabel}
                     name="photoBeforeAdmission"
                     type="file"
                     onChange={handleInputChange}
                     error={formErrors.photoBeforeAdmission}
                     accept="image/*"
-                    helpText="Upload photo taken before admission (JPG, PNG, max 5MB)"
+                    helpText={`Upload ${selectedStatusLabel.toLowerCase()} related primary photo (JPG, PNG, max 10MB)`}
                   />
                   {/* Display existing photo if in update mode */}
                   {isUpdateMode && formData.photoBeforeAdmissionUrl && (
@@ -1932,13 +2137,13 @@ function RegistrationForm() {
                 </div>
                 <div className="col-md-6">
                   <FormField
-                    label="Photo (After Admission)"
+                    label={secondaryStatusPhotoLabel}
                     name="photoAfterAdmission"
                     type="file"
                     onChange={handleInputChange}
                     error={formErrors.photoAfterAdmission}
                     accept="image/*"
-                    helpText="Upload photo taken after admission (JPG, PNG, max 5MB)"
+                    helpText={`Upload ${selectedStatusLabel.toLowerCase()} related secondary photo (JPG, PNG, max 10MB)`}
                   />
                   {/* Display existing photo if in update mode */}
                   {isUpdateMode && formData.photoAfterAdmissionUrl && (
@@ -1962,7 +2167,7 @@ function RegistrationForm() {
                     onChange={handleInputChange}
                     error={formErrors.videoUrl}
                     placeholder="https://..."
-                    helpText="Optional: Link to video documentation"
+                    helper={validationHints.videoUrl}
                   />
                 </div>
               </div>
@@ -1986,6 +2191,10 @@ function RegistrationForm() {
                       <i className="fas fa-info-circle me-2 mt-1"></i>
                       <div>
                         <strong>Document Types You Can Upload:</strong>
+                        <p className="mb-2 mt-2">
+                          Please upload all documents related to the selected status:
+                          <span className="fw-bold"> {selectedStatusLabel}</span>
+                        </p>
                         <ul className="mb-0 mt-2">
                           <li>Medical records and reports</li>
                           <li>Police verification documents</li>
@@ -2135,6 +2344,7 @@ function RegistrationForm() {
               >
                 Review & Confirm All Details
               </h3>
+              <ValidationGuide step={6} />
 
               <div className="alert alert-info mb-4" role="alert">
                 <strong>Please review all the information below before submitting the form.</strong> You can go back to any step to make changes.
@@ -2254,7 +2464,7 @@ function RegistrationForm() {
                   <div className="col-md-6"><strong>Admitted By:</strong> <span className="text-muted">{formData.admittedBy || "N/A"}</span></div>
                   <div className="col-md-6"><strong>Ward:</strong> <span className="text-muted">{formData.ward || "N/A"}</span></div>
                   <div className="col-md-6"><strong>Organization ID:</strong> <span className="text-muted">{formData.organizationId || "N/A"}</span></div>
-                  <div className="col-md-6"><strong>Admission Status:</strong> <span className="text-muted">{formData.admissionStatus || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Resident Status:</strong> <span className="text-muted">{formData.admissionStatus || "N/A"}</span></div>
                 </div>
               </div>
 
@@ -2290,8 +2500,8 @@ function RegistrationForm() {
               <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#059669"}}>
                 <h5 className="text-primary mb-4 fw-bold">📄 Documents & Media</h5>
                 <div className="row g-3">
-                  <div className="col-md-6"><strong>Photo (Before Admission):</strong> <span className="text-muted">{formData.photoBeforeAdmission ? formData.photoBeforeAdmission.name : "N/A"}</span></div>
-                  <div className="col-md-6"><strong>Photo (After Admission):</strong> <span className="text-muted">{formData.photoAfterAdmission ? formData.photoAfterAdmission.name : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>{primaryStatusPhotoLabel}:</strong> <span className="text-muted">{formData.photoBeforeAdmission ? formData.photoBeforeAdmission.name : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>{secondaryStatusPhotoLabel}:</strong> <span className="text-muted">{formData.photoAfterAdmission ? formData.photoAfterAdmission.name : "N/A"}</span></div>
                   {formData.documents.length > 0 && (
                     <div className="col-12">
                       <strong>Uploaded Documents ({formData.documents.length}):</strong>

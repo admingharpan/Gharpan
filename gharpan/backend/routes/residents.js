@@ -686,6 +686,9 @@ router.get("/", async (req, res) => {
     if (req.query.category)
       searchQuery.category = { $regex: req.query.category, $options: "i" };
     if (req.query.bloodGroup) searchQuery.bloodGroup = req.query.bloodGroup;
+    if (req.query.admissionStatus) {
+      searchQuery.admissionStatus = req.query.admissionStatus;
+    }
     if (req.query.state)
       searchQuery["address.state"] = { $regex: req.query.state, $options: "i" };
     if (req.query.disabilityStatus)
@@ -749,7 +752,7 @@ router.get("/", async (req, res) => {
     // UPDATED: Select more fields for proper display
     const residents = await Resident.find(searchQuery)
       .select(
-        "registrationNo admissionDate name nameGivenByOrganization gender age address healthStatus rehabStatus photoBeforeAdmission photoAfterAdmission photoUrl mobileNo guardianName bloodGroup category disabilityStatus createdAt updatedAt"
+        "registrationNo admissionDate name nameGivenByOrganization gender age address healthStatus rehabStatus admissionStatus photoBeforeAdmission photoAfterAdmission photoUrl mobileNo guardianName bloodGroup category disabilityStatus createdAt updatedAt"
       )
       .sort(sortObject)
       .skip(skip)
@@ -767,6 +770,7 @@ router.get("/", async (req, res) => {
       age: resident.age,
       placeName: resident.address?.district || resident.address?.state || "N/A",
       healthStatus: resident.healthStatus,
+      admissionStatus: resident.admissionStatus,
       rehabStatus: resident.rehabStatus,
       address: resident.address?.fullAddress || "N/A",
       mobileNo: resident.mobileNo,

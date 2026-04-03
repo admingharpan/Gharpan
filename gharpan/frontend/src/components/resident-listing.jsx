@@ -60,6 +60,7 @@ const ResidentsListing = () => {
   const [filters, setFilters] = useState({
     gender: "",
     healthStatus: "",
+    admissionStatus: "",
     category: "",
     bloodGroup: "",
     state: "",
@@ -72,6 +73,20 @@ const ResidentsListing = () => {
   // Utility function to check for valid ObjectId
   const isValidObjectId = (id) => {
     return /^[0-9a-fA-F]{24}$/.test(id);
+  };
+
+  const getResidentStatusBadgeClass = (status) => {
+    const normalized = (status || "").toLowerCase();
+    if (normalized.includes("death") || normalized.includes("body")) {
+      return "bg-gray-900 text-white";
+    }
+    if (normalized.includes("discharge") || normalized.includes("transfer")) {
+      return "bg-orange-100 text-orange-800";
+    }
+    if (normalized.includes("admission") || normalized.includes("active")) {
+      return "bg-emerald-100 text-emerald-800";
+    }
+    return "bg-slate-100 text-slate-800";
   };
 
   // Debounce utility function
@@ -534,6 +549,7 @@ const ResidentsListing = () => {
     const clearedFilters = {
       gender: "",
       healthStatus: "",
+      admissionStatus: "",
       category: "",
       bloodGroup: "",
       state: "",
@@ -2837,6 +2853,17 @@ const UpdateResidentModal = () => {
                 <p className="text-gray-600 mt-1">
                   Registration No: {selectedResident.registrationNo || "N/A"}
                 </p>
+                {selectedResident.admissionStatus && (
+                  <p className="mt-2">
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getResidentStatusBadgeClass(
+                        selectedResident.admissionStatus
+                      )}`}
+                    >
+                      {selectedResident.admissionStatus}
+                    </span>
+                  </p>
+                )}
                 <p className="text-sm text-gray-500 mt-1">
                   Admission Date: {formatDate(selectedResident.admissionDate)}
                 </p>
@@ -3389,6 +3416,28 @@ const UpdateResidentModal = () => {
                 </select>
               </div>
 
+              {/* Resident Status Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Resident Status
+                </label>
+                <select
+                  value={filters.admissionStatus}
+                  onChange={(e) =>
+                    handleFilterChange("admissionStatus", e.target.value)
+                  }
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">All Resident Status</option>
+                  <option value="Admission">Admission</option>
+                  <option value="Discharge">Discharge</option>
+                  <option value="Transfer">Transfer</option>
+                  <option value="Death">Death</option>
+                  <option value="Discharge/Transfer">Discharge/Transfer</option>
+                  <option value="Body Donation">Body Donation</option>
+                </select>
+              </div>
+
               {/* Category Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -3682,14 +3731,25 @@ const UpdateResidentModal = () => {
                       {resident.registrationNo}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <button
-                        onClick={() => handleViewDetails(resident)}
-                        className="text-sm font-medium text-blue-600 hover:text-blue-900 hover:underline"
-                      >
-                        {resident.name ||
-                          resident.nameGivenByOrganization ||
-                          "N/A"}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleViewDetails(resident)}
+                          className="text-sm font-medium text-blue-600 hover:text-blue-900 hover:underline"
+                        >
+                          {resident.name ||
+                            resident.nameGivenByOrganization ||
+                            "N/A"}
+                        </button>
+                        {resident.admissionStatus && (
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getResidentStatusBadgeClass(
+                              resident.admissionStatus
+                            )}`}
+                          >
+                            {resident.admissionStatus}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {resident.admissionDate

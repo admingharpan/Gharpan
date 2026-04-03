@@ -10,14 +10,19 @@ const FormField = ({
   placeholder, 
   options = [], 
   helper,
+  helpText,
   disabled = false,
   className = '',
   autoComplete = 'off',
   maxLength,
   min,
   max,
-  accept
+  accept,
+  pattern,
+  step
 }) => {
+  const helperText = helper || helpText;
+
   const renderInput = () => {
     switch (type) {
       case 'select':
@@ -77,6 +82,8 @@ const FormField = ({
             maxLength={maxLength}
             min={min}
             max={max}
+            pattern={pattern}
+            step={step}
           />
         );
     }
@@ -91,8 +98,8 @@ const FormField = ({
       
       {renderInput()}
       
-      {helper && (
-        <small className="form-text text-muted">{helper}</small>
+      {helperText && (
+        <small className="form-text text-muted">{helperText}</small>
       )}
       
       {error && (
