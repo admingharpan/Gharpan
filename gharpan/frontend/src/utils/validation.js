@@ -7,6 +7,36 @@ export const registrationFormRules = {
     pattern: /^[6-9]\d{9}$/,
     message: 'Mobile number should be 10 digits starting with 6-9'
   },
+
+  pincode: {
+    pattern: /^\d{6}$/,
+    message: 'PIN code should be exactly 6 digits'
+  },
+
+  phoneNumber: {
+    pattern: /^\d{10}$/,
+    message: 'Phone number should be 10 digits'
+  },
+
+  alternativeContact: {
+    pattern: /^\d{10}$/,
+    message: 'Alternative contact should be 10 digits'
+  },
+
+  emergencyContactNumber: {
+    pattern: /^\d{10}$/,
+    message: 'Emergency contact number should be 10 digits'
+  },
+
+  informerMobile: {
+    pattern: /^\d{10}$/,
+    message: 'Informer mobile number should be 10 digits'
+  },
+
+  driverMobile: {
+    pattern: /^\d{10}$/,
+    message: 'Driver mobile number should be 10 digits'
+  },
   
   age: {
     pattern: /^\d+$/,
@@ -33,28 +63,108 @@ export const registrationFormRules = {
   aadhaarNumber: {
     pattern: /^\d{12}$/,
     message: 'Aadhaar should be 12 digits'
+  },
+
+  emailAddress: {
+    pattern: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,})+$/,
+    message: 'Please enter a valid email address'
+  },
+
+  category: {
+    pattern: /^(Other|Emergency|Routine)$/,
+    message: 'Category should be Other, Emergency, or Routine'
+  },
+
+  bodyTemperature: {
+    pattern: /^\d*\.?\d+$/,
+    min: 30,
+    max: 45,
+    message: 'Body temperature should be between 30 and 45 degree C'
+  },
+
+  heartRate: {
+    pattern: /^\d+$/,
+    min: 30,
+    max: 200,
+    message: 'Heart rate should be between 30 and 200 BPM'
+  },
+
+  respiratoryRate: {
+    pattern: /^\d+$/,
+    min: 5,
+    max: 40,
+    message: 'Respiratory rate should be between 5 and 40'
+  },
+
+  itemAmount: {
+    pattern: /^\d*\.?\d+$/,
+    min: 0,
+    message: 'Item amount cannot be negative'
+  },
+
+  videoUrl: {
+    pattern: /^https?:\/\/.+/,
+    message: 'Video URL should start with http:// or https://'
   }
+};
+
+const phoneFields = new Set([
+  'mobileNo',
+  'phoneNumber',
+  'alternativeContact',
+  'emergencyContactNumber',
+  'informerMobile',
+  'driverMobile'
+]);
+
+export const normalizePhoneNumber = (value) => {
+  if (value === null || value === undefined) return '';
+
+  let digits = String(value).replace(/\D/g, '');
+
+  // Handle commonly entered prefixes like +91XXXXXXXXXX or 0XXXXXXXXXX.
+  if (digits.length === 12 && digits.startsWith('91')) {
+    digits = digits.slice(2);
+  }
+  if (digits.length === 11 && digits.startsWith('0')) {
+    digits = digits.slice(1);
+  }
+
+  // Keep input manageable while user is typing.
+  if (digits.length > 10) {
+    digits = digits.slice(-10);
+  }
+
+  return digits;
 };
 
 // Validate individual field - only format, no required validation
 export const validateField = (name, value, rules = registrationFormRules) => {
-  if (!value || !rules[name]) {
+  if (!rules[name]) {
+    return { isValid: true, error: '' };
+  }
+
+  const normalizedValue = phoneFields.has(name)
+    ? normalizePhoneNumber(value)
+    : String(value ?? '').trim();
+
+  if (!normalizedValue) {
     return { isValid: true, error: '' };
   }
 
   const rule = rules[name];
   
   // Pattern validation
-  if (rule.pattern && !rule.pattern.test(value)) {
+  if (rule.pattern && !rule.pattern.test(normalizedValue)) {
     return { isValid: false, error: rule.message };
   }
   
   // Min/Max validation for numbers
-  if (rule.min !== undefined && parseFloat(value) < rule.min) {
+  if (rule.min !== undefined && parseFloat(normalizedValue) < rule.min) {
     return { isValid: false, error: rule.message };
   }
   
-  if (rule.max !== undefined && parseFloat(value) > rule.max) {
+  if (rule.max !== undefined && parseFloat(normalizedValue) > rule.max) {
     return { isValid: false, error: rule.message };
   }
   

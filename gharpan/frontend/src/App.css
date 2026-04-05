@@ -21,3 +21,22 @@ body,
 .app-main {
   flex: 1;
 }
+
+@keyframes invalidGlowPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    border-color: inherit;
+  }
+  25% {
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.35);
+    border-color: #dc3545;
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    border-color: inherit;
+  }
+}
+
+.invalid-field-attention {
+  animation: invalidGlowPulse 1s ease-out;
+}

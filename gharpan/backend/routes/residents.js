@@ -38,6 +38,23 @@ const isValidObjectId = (id) => {
   return mongoose.Types.ObjectId.isValid(id);
 };
 
+const normalizePhoneNumber = (value) => {
+  if (value === null || value === undefined) return "";
+
+  let digits = String(value).replace(/\D/g, "");
+  if (digits.length === 12 && digits.startsWith("91")) {
+    digits = digits.slice(2);
+  }
+  if (digits.length === 11 && digits.startsWith("0")) {
+    digits = digits.slice(1);
+  }
+  if (digits.length > 10) {
+    digits = digits.slice(-10);
+  }
+
+  return digits;
+};
+
 // UPDATED: Enhanced multer configuration to handle multiple photo uploads
 const photoUpload = multer({
   storage: multer.memoryStorage(),
@@ -841,7 +858,8 @@ router.post("/validate", async (req, res) => {
       case "mobileNo":
         const mobilePattern = /^[6-9]\d{9}$/;
         if (value) {
-          if (!mobilePattern.test(value)) {
+          const normalizedMobile = normalizePhoneNumber(value);
+          if (!mobilePattern.test(normalizedMobile)) {
             validationResults.mobileNo = {
               isValid: false,
               message: "Invalid mobile number format",
@@ -849,7 +867,7 @@ router.post("/validate", async (req, res) => {
             };
           } else {
             const existing = await Resident.findOne({
-              mobileNo: value,
+              mobileNo: normalizedMobile,
               isActive: true,
               _id: { $ne: context?.residentId },
             });

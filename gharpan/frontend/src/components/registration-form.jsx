@@ -7,6 +7,7 @@ import {
   validateForm,
   validateField,
   registrationFormRules,
+  normalizePhoneNumber,
   saveFormDraft,
   loadFormDraft,
   clearFormDraft,
@@ -358,6 +359,14 @@ function RegistrationForm() {
   // Handle input changes with validation and auto-save
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
+    const phoneFields = new Set([
+      "mobileNo",
+      "phoneNumber",
+      "alternativeContact",
+      "emergencyContactNumber",
+      "informerMobile",
+      "driverMobile",
+    ]);
 
     let newFormData;
     if (type === "file") {
@@ -367,9 +376,13 @@ function RegistrationForm() {
         [name]: files[0],
       };
     } else {
+      const normalizedValue = phoneFields.has(name)
+        ? normalizePhoneNumber(value)
+        : value;
+
       newFormData = {
         ...formData,
-        [name]: value,
+        [name]: normalizedValue,
       };
     }
 
@@ -377,7 +390,7 @@ function RegistrationForm() {
 
     // Real-time validation (only format validation, not required)
     if (registrationFormRules[name]) {
-      const validation = validateField(name, value, registrationFormRules);
+      const validation = validateField(name, newFormData[name], registrationFormRules);
       setFormErrors((prev) => ({
         ...prev,
         [name]: validation.isValid ? "" : validation.error,
@@ -397,6 +410,34 @@ function RegistrationForm() {
   };
 
   // Validate current step
+  const focusFirstInvalidField = (stepFields, errors) => {
+    const firstInvalidField = stepFields.find((field) => Boolean(errors[field]));
+    if (!firstInvalidField) return;
+
+    window.setTimeout(() => {
+      const targetField = document.querySelector(`[name="${firstInvalidField}"]`);
+      if (!targetField) return;
+
+      // Re-trigger animation each time validation fails.
+      targetField.classList.remove("invalid-field-attention");
+      void targetField.offsetWidth;
+      targetField.classList.add("invalid-field-attention");
+      window.setTimeout(() => {
+        targetField.classList.remove("invalid-field-attention");
+      }, 1000);
+
+      targetField.scrollIntoView({ behavior: "smooth", block: "center" });
+      targetField.focus({ preventScroll: true });
+
+      if (
+        (targetField.tagName === "INPUT" || targetField.tagName === "TEXTAREA") &&
+        typeof targetField.select === "function"
+      ) {
+        targetField.select();
+      }
+    }, 60);
+  };
+
   const validateCurrentStep = () => {
     const stepFields = getStepFields(currentStep);
     const stepData = {};
@@ -412,12 +453,19 @@ function RegistrationForm() {
     });
 
     const { isValid, errors } = validateForm(stepData, stepRules);
-    setFormErrors((prev) => ({ ...prev, ...errors }));
+    setFormErrors((prev) => {
+      const updatedErrors = { ...prev };
+      stepFields.forEach((field) => {
+        updatedErrors[field] = errors[field] || "";
+      });
+      return updatedErrors;
+    });
 
-    // Show warnings for format issues but don't block
+    // Show errors on the same step and block moving forward.
     if (!isValid) {
-      showWarning(
-        "Some fields have format issues. Please check and correct them.",
+      focusFirstInvalidField(stepFields, errors);
+      showError(
+        "Please fix validation errors in this step before moving to the next page.",
         5000
       );
     }
@@ -439,13 +487,47 @@ function RegistrationForm() {
           "age",
         ];
       case 2:
-        return ["fullAddress", "state", "district", "guardianName", "mobileNo"];
+        return [
+          "fullAddress",
+          "state",
+          "district",
+          "guardianName",
+          "mobileNo",
+          "phoneNumber",
+          "alternativeContact",
+          "emailAddress",
+          "pincode",
+          "voterId",
+          "aadhaarNumber",
+          "emergencyContactNumber",
+        ];
       case 3:
-        return ["healthStatus", "bloodGroup", "allergies", "medicalConditions"];
+        return [
+          "healthStatus",
+          "bloodGroup",
+          "allergies",
+          "medicalConditions",
+          "category",
+          "bodyTemperature",
+          "heartRate",
+          "respiratoryRate",
+        ];
       case 4:
-        return ["ward", "admittedBy", "rehabStatus"];
+        return [
+          "ward",
+          "admittedBy",
+          "rehabStatus",
+          "informerMobile",
+          "driverMobile",
+          "itemAmount",
+        ];
       case 5:
-        return ["admissionStatus", "photoBeforeAdmission", "photoAfterAdmission"];
+        return [
+          "admissionStatus",
+          "photoBeforeAdmission",
+          "photoAfterAdmission",
+          "videoUrl",
+        ];
       default:
         return [];
     }
@@ -455,19 +537,20 @@ function RegistrationForm() {
   const handleStepClick = (step) => {
     if (step <= currentStep || validateCurrentStep()) {
       setCurrentStep(step);
+      window.scrollTo(0, 0);
     } else {
-      showWarning("Please fix any format issues before proceeding", 3000);
+      showWarning("Please fix step errors before proceeding", 3000);
     }
   };
 
   const handleNextStep = () => {
-  if (validateCurrentStep() || true) {
-    if (currentStep < formSteps.length) {
-      setCurrentStep(currentStep + 1);
-      window.scrollTo(0, 0);
+    if (validateCurrentStep()) {
+      if (currentStep < formSteps.length) {
+        setCurrentStep(currentStep + 1);
+        window.scrollTo(0, 0);
+      }
     }
-  }
-};
+  };
 
   const handlePrevStep = () => {
   if (currentStep > 1) {
