@@ -126,6 +126,7 @@ function RegistrationForm() {
     admittedBy: "",
     organizationId: "",
     admissionStatus: "Admission",
+    statusDate: "",
     ward: "",
     receiptNo: "",
     letterNo: "",
@@ -279,6 +280,7 @@ function RegistrationForm() {
           admittedBy: residentData.admittedBy || "",
           organizationId: residentData.organizationId || "",
           admissionStatus: residentData.admissionStatus || "Admission",
+          statusDate: residentData.statusDate ? residentData.statusDate.split('T')[0] : "",
           ward: residentData.ward || "",
           receiptNo: residentData.receiptNo || "",
           letterNo: residentData.letterNo || "",
@@ -524,6 +526,7 @@ function RegistrationForm() {
       case 5:
         return [
           "admissionStatus",
+          "statusDate",
           "photoBeforeAdmission",
           "photoAfterAdmission",
           "videoUrl",
@@ -876,6 +879,7 @@ function RegistrationForm() {
           admittedBy: "",
           organizationId: "",
           admissionStatus: "Admission",
+          statusDate: "",
           ward: "",
           receiptNo: "",
           letterNo: "",
@@ -963,8 +967,9 @@ function RegistrationForm() {
   ];
 
   const selectedStatusLabel = formData.admissionStatus || "Status";
-  const primaryStatusPhotoLabel = `${selectedStatusLabel} Photo (Primary)`;
-  const secondaryStatusPhotoLabel = `${selectedStatusLabel} Photo (Secondary)`;
+  const statusDateLabel = `${selectedStatusLabel} Date`;
+  const beforeStatusPhotoLabel = "Before Photo";
+  const afterStatusPhotoLabel = "After Photo";
 
   const stepValidationGuides = {
     1: [
@@ -993,6 +998,7 @@ function RegistrationForm() {
     ],
     5: [
       "Select the current resident status before uploading evidence.",
+      "Record the date related to the selected resident status.",
       "Photos should be image files only.",
       "Each uploaded file must be within size limits.",
       "Upload all files related to the selected resident status.",
@@ -1185,6 +1191,7 @@ function RegistrationForm() {
                     admittedBy: "",
                     organizationId: "",
                     admissionStatus: "Admission",
+                    statusDate: "",
                     ward: "",
                     receiptNo: "",
                     letterNo: "",
@@ -2177,6 +2184,17 @@ function RegistrationForm() {
                         </div>
                       ))}
                     </div>
+                    <div className="mt-3" style={{ maxWidth: "360px" }}>
+                      <FormField
+                        label={statusDateLabel}
+                        name="statusDate"
+                        type="date"
+                        value={formData.statusDate}
+                        onChange={handleInputChange}
+                        error={formErrors.statusDate}
+                        helper={`Capture the date when the resident was marked as ${selectedStatusLabel.toLowerCase()}.`}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2197,13 +2215,13 @@ function RegistrationForm() {
                 </div>
                 <div className="col-md-6">
                   <FormField
-                    label={primaryStatusPhotoLabel}
+                    label={beforeStatusPhotoLabel}
                     name="photoBeforeAdmission"
                     type="file"
                     onChange={handleInputChange}
                     error={formErrors.photoBeforeAdmission}
                     accept="image/*"
-                    helpText={`Upload ${selectedStatusLabel.toLowerCase()} related primary photo (JPG, PNG, max 10MB)`}
+                    helpText={`Upload ${selectedStatusLabel.toLowerCase()} related before photo (JPG, PNG, max 10MB)`}
                   />
                   {/* Display existing photo if in update mode */}
                   {isUpdateMode && formData.photoBeforeAdmissionUrl && (
@@ -2220,13 +2238,13 @@ function RegistrationForm() {
                 </div>
                 <div className="col-md-6">
                   <FormField
-                    label={secondaryStatusPhotoLabel}
+                    label={afterStatusPhotoLabel}
                     name="photoAfterAdmission"
                     type="file"
                     onChange={handleInputChange}
                     error={formErrors.photoAfterAdmission}
                     accept="image/*"
-                    helpText={`Upload ${selectedStatusLabel.toLowerCase()} related secondary photo (JPG, PNG, max 10MB)`}
+                    helpText={`Upload ${selectedStatusLabel.toLowerCase()} related after photo (JPG, PNG, max 10MB)`}
                   />
                   {/* Display existing photo if in update mode */}
                   {isUpdateMode && formData.photoAfterAdmissionUrl && (
@@ -2548,6 +2566,7 @@ function RegistrationForm() {
                   <div className="col-md-6"><strong>Ward:</strong> <span className="text-muted">{formData.ward || "N/A"}</span></div>
                   <div className="col-md-6"><strong>Organization ID:</strong> <span className="text-muted">{formData.organizationId || "N/A"}</span></div>
                   <div className="col-md-6"><strong>Resident Status:</strong> <span className="text-muted">{formData.admissionStatus || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>{statusDateLabel}:</strong> <span className="text-muted">{formData.statusDate ? new Date(formData.statusDate).toLocaleDateString() : "N/A"}</span></div>
                 </div>
               </div>
 
@@ -2583,8 +2602,8 @@ function RegistrationForm() {
               <div className="mb-5 p-3 border-start border-4" style={{borderLeftColor: "#059669"}}>
                 <h5 className="text-primary mb-4 fw-bold">📄 Documents & Media</h5>
                 <div className="row g-3">
-                  <div className="col-md-6"><strong>{primaryStatusPhotoLabel}:</strong> <span className="text-muted">{formData.photoBeforeAdmission ? formData.photoBeforeAdmission.name : "N/A"}</span></div>
-                  <div className="col-md-6"><strong>{secondaryStatusPhotoLabel}:</strong> <span className="text-muted">{formData.photoAfterAdmission ? formData.photoAfterAdmission.name : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>{beforeStatusPhotoLabel}:</strong> <span className="text-muted">{formData.photoBeforeAdmission ? formData.photoBeforeAdmission.name : "N/A"}</span></div>
+                  <div className="col-md-6"><strong>{afterStatusPhotoLabel}:</strong> <span className="text-muted">{formData.photoAfterAdmission ? formData.photoAfterAdmission.name : "N/A"}</span></div>
                   {formData.documents.length > 0 && (
                     <div className="col-12">
                       <strong>Uploaded Documents ({formData.documents.length}):</strong>

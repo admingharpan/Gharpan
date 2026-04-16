@@ -411,6 +411,9 @@ const residentSchema = new mongoose.Schema({
     ],
     default: 'Admission'
   },
+  statusDate: {
+    type: Date
+  },
   ward: {
     type: String,
     trim: true

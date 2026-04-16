@@ -301,6 +301,7 @@ const ResidentsListing = () => {
       ward: resident.ward || "",
       organizationId: resident.organizationId || "",
       admissionStatus: resident.admissionStatus || "",
+      statusDate: resident.statusDate || "",
       transportNotes: resident.transportNotes || "",
       receiptNo: resident.receiptNo || "",
       letterNo: resident.letterNo || "",
@@ -1786,6 +1787,16 @@ const UpdateResidentModal = () => {
                     <option value="Discharged">Discharged</option>
                   </select>
                 </div>
+                <div className="col-md-3">
+                  <label className="form-label" style={{ fontWeight: 600 }}>Status Date</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={formatDateForInput(localFormData.statusDate) || ""}
+                    onChange={(e) => handleLocalInputChange("statusDate", e.target.value)}
+                    onBlur={(e) => handleInputBlur("statusDate", e.target.value)}
+                  />
+                </div>
               </div>
             </div>
 
@@ -2458,6 +2469,19 @@ const UpdateResidentModal = () => {
                   <option value="Absconded">Absconded</option>
                 </select>
               </div>
+              <div className="col-md-6">
+                <label className="form-label" style={{ fontWeight: 600 }}>
+                  Status Date
+                </label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={formatDateForInput(localFormData.statusDate) || ""}
+                  onChange={(e) => handleLocalInputChange("statusDate", e.target.value)}
+                  onBlur={(e) => handleInputBlur("statusDate", e.target.value)}
+                />
+                <small className="text-muted">Date when current resident status was recorded</small>
+              </div>
             </div>
             {/* Section Navigation Buttons */}
             <div className="mt-4 pt-3 border-t flex justify-between">
@@ -2714,6 +2738,7 @@ const UpdateResidentModal = () => {
                   <div className="col-md-6"><strong>Ward:</strong> <span className="text-muted">{localFormData.ward || "N/A"}</span></div>
                   <div className="col-md-6"><strong>Organization ID:</strong> <span className="text-muted">{localFormData.organizationId || "N/A"}</span></div>
                   <div className="col-md-6"><strong>Admission Status:</strong> <span className="text-muted">{localFormData.admissionStatus || "N/A"}</span></div>
+                  <div className="col-md-6"><strong>Status Date:</strong> <span className="text-muted">{localFormData.statusDate ? new Date(localFormData.statusDate).toLocaleDateString() : "N/A"}</span></div>
                 </div>
               </div>
 
@@ -2866,6 +2891,9 @@ const UpdateResidentModal = () => {
                 )}
                 <p className="text-sm text-gray-500 mt-1">
                   Admission Date: {formatDate(selectedResident.admissionDate)}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Status Date: {formatDate(selectedResident.statusDate)}
                 </p>
               </div>
 
@@ -3071,6 +3099,7 @@ const UpdateResidentModal = () => {
                 <div className="col-md-6"><strong>Ward:</strong> <span className="text-muted">{selectedResident.ward || "N/A"}</span></div>
                 <div className="col-md-6"><strong>Organization ID:</strong> <span className="text-muted">{selectedResident.organizationId || "N/A"}</span></div>
                 <div className="col-md-6"><strong>Admission Status:</strong> <span className="text-muted">{selectedResident.admissionStatus || "N/A"}</span></div>
+                <div className="col-md-6"><strong>Status Date:</strong> <span className="text-muted">{formatDate(selectedResident.statusDate)}</span></div>
               </div>
             </div>
 
