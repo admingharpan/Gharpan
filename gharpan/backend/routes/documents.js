@@ -61,7 +61,21 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     }
 
     // Validate document type
-    const validTypes = ['medical', 'police_verification', 'identity_proof', 'address_proof', 'court_documents', 'certificates', 'legal_documents', 'other'];
+    const validTypes = [
+      'medical',
+      'police_verification',
+      'identity_proof',
+      'address_proof',
+      'court_documents',
+      'certificates',
+      'legal_documents',
+      'death_certificate',
+      'post_mortem_report',
+      'admission_form',
+      'transfer_form',
+      'body_donation_form',
+      'other'
+    ];
     if (!validTypes.includes(type)) {
       return res.status(400).json({ success: false, message: `Invalid document type: ${type}` });
     }

@@ -954,6 +954,11 @@ function RegistrationForm() {
     { value: "court_documents", label: "Court Documents" },
     { value: "certificates", label: "Certificates" },
     { value: "legal_documents", label: "Legal Documents" },
+    { value: "death_certificate", label: "Death Certificate" },
+    { value: "post_mortem_report", label: "Post Mortem Report" },
+    { value: "admission_form", label: "Admission Form" },
+    { value: "transfer_form", label: "Transfer Form" },
+    { value: "body_donation_form", label: "Body Donation Form" },
     { value: "other", label: "Other" },
   ];
 
@@ -968,8 +973,23 @@ function RegistrationForm() {
 
   const selectedStatusLabel = formData.admissionStatus || "Status";
   const statusDateLabel = `${selectedStatusLabel} Date`;
-  const beforeStatusPhotoLabel = "Before Photo";
-  const afterStatusPhotoLabel = "After Photo";
+  const photoStatusLabel = selectedStatusLabel || "Status";
+  const beforeStatusPhotoLabel = `Before ${photoStatusLabel} Photo`;
+  const afterStatusPhotoLabel = `After ${photoStatusLabel} Photo`;
+
+  const getHealthStatusDisplayValue = (status) => {
+    const normalizedStatus = (status || "").trim();
+    return normalizedStatus ? normalizedStatus : "N/A";
+  };
+
+  const getHealthStatusBadgeClass = (status) => {
+    const normalizedStatus = getHealthStatusDisplayValue(status).toLowerCase();
+
+    if (normalizedStatus === "n/a") return "bg-secondary";
+    if (normalizedStatus.includes("good") || normalizedStatus.includes("excellent")) return "bg-success";
+    if (normalizedStatus.includes("critical") || normalizedStatus.includes("poor")) return "bg-danger";
+    return "bg-warning";
+  };
 
   const stepValidationGuides = {
     1: [
@@ -2229,7 +2249,7 @@ function RegistrationForm() {
                       <small className="text-muted">Current photo:</small>
                       <img 
                         src={formData.photoBeforeAdmissionUrl} 
-                        alt="Before Admission" 
+                        alt={beforeStatusPhotoLabel}
                         className="img-thumbnail mt-1"
                         style={{ maxWidth: "100px", maxHeight: "100px" }}
                       />
@@ -2252,7 +2272,7 @@ function RegistrationForm() {
                       <small className="text-muted">Current photo:</small>
                       <img 
                         src={formData.photoAfterAdmissionUrl} 
-                        alt="After Admission" 
+                        alt={afterStatusPhotoLabel}
                         className="img-thumbnail mt-1"
                         style={{ maxWidth: "100px", maxHeight: "100px" }}
                       />
@@ -2514,8 +2534,8 @@ function RegistrationForm() {
                 <div className="row g-3">
                   <div className="col-md-6">
                     <strong>Health Status:</strong>
-                    <span className={`ms-2 badge ${formData.healthStatus?.toLowerCase().includes("good") ? "bg-success" : formData.healthStatus?.toLowerCase().includes("critical") ? "bg-danger" : "bg-warning"}`}>
-                      {formData.healthStatus || "N/A"}
+                    <span className={`ms-2 badge ${getHealthStatusBadgeClass(formData.healthStatus)}`}>
+                      {getHealthStatusDisplayValue(formData.healthStatus)}
                     </span>
                   </div>
                   <div className="col-md-6"><strong>Blood Group:</strong> <span className="text-muted">{formData.bloodGroup || "N/A"}</span></div>

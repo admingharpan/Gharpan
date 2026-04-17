@@ -89,6 +89,68 @@ const ResidentsListing = () => {
     return "bg-slate-100 text-slate-800";
   };
 
+  const isResidentDeceased = (resident) => {
+    const normalizedStatus = (resident?.admissionStatus || "").toLowerCase();
+    return normalizedStatus.includes("death") || normalizedStatus.includes("body donation");
+  };
+
+  const getDisplayedHealthStatus = (resident) => {
+    if (isResidentDeceased(resident)) {
+      return "Death";
+    }
+    const normalizedHealthStatus = (resident?.healthStatus || "").trim();
+    return normalizedHealthStatus || "N/A";
+  };
+
+  const getHealthStatusDisplayValue = (status) => {
+    const normalizedStatus = (status || "").trim();
+    return normalizedStatus || "N/A";
+  };
+
+  const getHealthStatusBadgeClass = (resident) => {
+    const displayedStatus = getDisplayedHealthStatus(resident).toLowerCase();
+
+    if (displayedStatus.includes("death")) {
+      return "bg-gray-900 text-white";
+    }
+    if (displayedStatus.includes("good")) {
+      return "bg-green-100 text-green-800";
+    }
+    if (displayedStatus.includes("critical")) {
+      return "bg-red-100 text-red-800";
+    }
+    if (displayedStatus.includes("fair")) {
+      return "bg-yellow-100 text-yellow-800";
+    }
+    if (displayedStatus.includes("stable")) {
+      return "bg-blue-100 text-blue-800";
+    }
+    return "bg-gray-100 text-gray-800";
+  };
+
+  const getPhotoStatusContextLabel = (status) => {
+    const normalizedStatus = (status || "").trim();
+    return normalizedStatus || "Status";
+  };
+
+  const normalizeHealthStatusValue = (status) => {
+    const allowedHealthStatuses = [
+      "Excellent",
+      "Good",
+      "Fair",
+      "Poor",
+      "Critical",
+      "Stable",
+      "Improving",
+      "Declining",
+    ];
+
+    const normalizedStatus = (status || "").trim();
+    return allowedHealthStatuses.includes(normalizedStatus)
+      ? normalizedStatus
+      : "";
+  };
+
   // Debounce utility function
   function debounce(func, wait) {
     let timeout;
@@ -248,7 +310,7 @@ const ResidentsListing = () => {
       aadhaarNumber: resident.aadhaarNumber || "",
 
       // Health Information
-      healthStatus: resident.healthStatus || "",
+      healthStatus: normalizeHealthStatusValue(resident.healthStatus),
       category: resident.category || "",
       bloodGroup: resident.bloodGroup || "",
       bodyTemperature: resident.bodyTemperature || "",
@@ -800,12 +862,18 @@ const UpdateResidentModal = () => {
   if (!showUpdateModal || !updateResident) return null;
 
   // KEY FIX: Use local state to prevent parent re-renders on every keystroke
-  const [localFormData, setLocalFormData] = useState(formData);
+  const [localFormData, setLocalFormData] = useState({
+    ...formData,
+    healthStatus: normalizeHealthStatusValue(formData.healthStatus),
+  });
   const [activeSection, setActiveSection] = useState("basic"); // Section navigation state
 
   // Sync local state when modal opens
   useEffect(() => {
-    setLocalFormData(formData);
+    setLocalFormData({
+      ...formData,
+      healthStatus: normalizeHealthStatusValue(formData.healthStatus),
+    });
   }, [showUpdateModal, formData]);
 
   const formatDateForInput = (dateValue) => {
@@ -1412,7 +1480,7 @@ const UpdateResidentModal = () => {
                 </label>
                 <select
                   className="form-select"
-                  value={localFormData.healthStatus || ""}
+                  value={normalizeHealthStatusValue(localFormData.healthStatus)}
                   onChange={(e) => {
                     handleLocalInputChange("healthStatus", e.target.value);
                     handleInputBlur("healthStatus", e.target.value);
@@ -1861,18 +1929,18 @@ const UpdateResidentModal = () => {
               )}
 
               <div className="col-md-6">
-                <h6 className="fw-bold">Photo Before Admission</h6>
+                <h6 className="fw-bold">{`Photo Before ${getPhotoStatusContextLabel(localFormData.admissionStatus)}`}</h6>
                 {localFormData.photoBeforeAdmission ? (
-                  <img src={localFormData.photoBeforeAdmission} alt="Before" className="img-thumbnail" style={{ maxHeight: '150px' }} />
+                  <img src={localFormData.photoBeforeAdmission} alt={`Photo Before ${getPhotoStatusContextLabel(localFormData.admissionStatus)}`} className="img-thumbnail" style={{ maxHeight: '150px' }} />
                 ) : (
                   <p className="text-muted">Not uploaded</p>
                 )}
               </div>
 
               <div className="col-md-6">
-                <h6 className="fw-bold">Photo After Admission</h6>
+                <h6 className="fw-bold">{`Photo After ${getPhotoStatusContextLabel(localFormData.admissionStatus)}`}</h6>
                 {localFormData.photoAfterAdmission ? (
-                  <img src={localFormData.photoAfterAdmission} alt="After" className="img-thumbnail" style={{ maxHeight: '150px' }} />
+                  <img src={localFormData.photoAfterAdmission} alt={`Photo After ${getPhotoStatusContextLabel(localFormData.admissionStatus)}`} className="img-thumbnail" style={{ maxHeight: '150px' }} />
                 ) : (
                   <p className="text-muted">Not uploaded</p>
                 )}
@@ -2702,8 +2770,8 @@ const UpdateResidentModal = () => {
                 <div className="row g-3">
                   <div className="col-md-6">
                     <strong>Health Status:</strong>
-                    <span className={`ms-2 badge ${localFormData.healthStatus?.toLowerCase().includes("good") ? "bg-success" : localFormData.healthStatus?.toLowerCase().includes("critical") ? "bg-danger" : "bg-warning"}`}>
-                      {localFormData.healthStatus || "N/A"}
+                      <span className={`ms-2 badge ${getHealthStatusDisplayValue(localFormData.healthStatus).toLowerCase().includes("good") ? "bg-success" : getHealthStatusDisplayValue(localFormData.healthStatus).toLowerCase().includes("critical") ? "bg-danger" : getHealthStatusDisplayValue(localFormData.healthStatus) === "N/A" ? "bg-secondary" : "bg-warning"}`}>
+                        {getHealthStatusDisplayValue(localFormData.healthStatus)}
                     </span>
                   </div>
                   <div className="col-md-6"><strong>Blood Group:</strong> <span className="text-muted">{localFormData.bloodGroup || "N/A"}</span></div>
@@ -2917,13 +2985,13 @@ const UpdateResidentModal = () => {
                   </button>
                 </div>
 
-                {/* Photo Before Admission */}
+                {/* Photo Before Status */}
                 {selectedResident.photoBeforeAdmission ? (
                   <div className="flex-shrink-0">
-                    <p className="text-xs text-gray-500 text-center mb-1">Before Admission</p>
+                    <p className="text-xs text-gray-500 text-center mb-1">{`Before ${getPhotoStatusContextLabel(selectedResident.admissionStatus)}`}</p>
                     <img
                       src={selectedResident.photoBeforeAdmission}
-                      alt="Before Admission"
+                      alt={`Before ${getPhotoStatusContextLabel(selectedResident.admissionStatus)}`}
                       className="w-20 h-20 object-cover rounded-lg shadow-lg border-2 border-gray-200"
                       onError={handleImageError}
                       onLoad={(e) => (e.target.style.display = "block")}
@@ -2931,20 +2999,20 @@ const UpdateResidentModal = () => {
                   </div>
                 ) : (
                   <div className="flex-shrink-0">
-                    <p className="text-xs text-gray-500 text-center mb-1">Before Admission</p>
+                    <p className="text-xs text-gray-500 text-center mb-1">{`Before ${getPhotoStatusContextLabel(selectedResident.admissionStatus)}`}</p>
                     <div className="w-20 h-20 flex items-center justify-center bg-gray-100 rounded-lg shadow-lg border-2 border-gray-200">
                       <span className="text-gray-500 text-xs">No Image</span>
                     </div>
                   </div>
                 )}
 
-                {/* Photo After Admission */}
+                {/* Photo After Status */}
                 {selectedResident.photoAfterAdmission ? (
                   <div className="flex-shrink-0">
-                    <p className="text-xs text-gray-500 text-center mb-1">After Admission</p>
+                    <p className="text-xs text-gray-500 text-center mb-1">{`After ${getPhotoStatusContextLabel(selectedResident.admissionStatus)}`}</p>
                     <img
                       src={selectedResident.photoAfterAdmission}
-                      alt="After Admission"
+                      alt={`After ${getPhotoStatusContextLabel(selectedResident.admissionStatus)}`}
                       className="w-20 h-20 object-cover rounded-lg shadow-lg border-2 border-gray-200"
                       onError={handleImageError}
                       onLoad={(e) => (e.target.style.display = "block")}
@@ -2952,7 +3020,7 @@ const UpdateResidentModal = () => {
                   </div>
                 ) : (
                   <div className="flex-shrink-0">
-                    <p className="text-xs text-gray-500 text-center mb-1">After Admission</p>
+                    <p className="text-xs text-gray-500 text-center mb-1">{`After ${getPhotoStatusContextLabel(selectedResident.admissionStatus)}`}</p>
                     <div className="w-20 h-20 flex items-center justify-center bg-gray-100 rounded-lg shadow-lg border-2 border-gray-200">
                       <span className="text-gray-500 text-xs">No Image</span>
                     </div>
@@ -3047,8 +3115,8 @@ const UpdateResidentModal = () => {
               <div className="row g-3">
                 <div className="col-md-6">
                   <strong>Health Status:</strong>
-                  <span className={`ms-2 badge ${selectedResident.healthStatus?.toLowerCase().includes("good") ? "bg-success" : selectedResident.healthStatus?.toLowerCase().includes("critical") ? "bg-danger" : "bg-warning"}`}>
-                    {selectedResident.healthStatus || "N/A"}
+                  <span className={`ms-2 badge ${getHealthStatusDisplayValue(selectedResident.healthStatus).toLowerCase().includes("good") ? "bg-success" : getHealthStatusDisplayValue(selectedResident.healthStatus).toLowerCase().includes("critical") ? "bg-danger" : getHealthStatusDisplayValue(selectedResident.healthStatus) === "N/A" ? "bg-secondary" : "bg-warning"}`}>
+                    {getHealthStatusDisplayValue(selectedResident.healthStatus)}
                   </span>
                 </div>
                 <div className="col-md-6"><strong>Blood Group:</strong> <span className="text-muted">{selectedResident.bloodGroup || "N/A"}</span></div>
@@ -3793,24 +3861,9 @@ const UpdateResidentModal = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${resident.healthStatus?.toLowerCase().includes("good")
-                          ? "bg-green-100 text-green-800"
-                          : resident.healthStatus
-                            ?.toLowerCase()
-                            .includes("critical")
-                            ? "bg-red-100 text-red-800"
-                            : resident.healthStatus
-                              ?.toLowerCase()
-                              .includes("fair")
-                              ? "bg-yellow-100 text-yellow-800"
-                              : resident.healthStatus
-                                ?.toLowerCase()
-                                .includes("stable")
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-gray-100 text-gray-800"
-                          }`}
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getHealthStatusBadgeClass(resident)}`}
                       >
-                        {resident.healthStatus || "N/A"}
+                        {getDisplayedHealthStatus(resident)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
